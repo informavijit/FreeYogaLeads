@@ -128,7 +128,7 @@ function switchTab(tabId) {
   }
 
   // Toggle tab contents
-  const tabs = ['dashboard', 'directory', 'social', 'outreach', 'crm', 'settings'];
+  const tabs = ['dashboard', 'directory', 'social', 'outreach', 'ivr', 'crm', 'settings'];
   tabs.forEach(t => {
     const el = document.getElementById(`tab-content-${t}`);
     if (el) {
@@ -364,6 +364,11 @@ function renderDirectoryTable(leads) {
       </td>
       <td class="p-3 text-right">
         <div class="flex items-center justify-end gap-1.5">
+          ${isIndianPhone(l.phone) ? `
+            <button onclick="launchIvrCallForLead('${l.phone}', '${l.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md transition-all" title="Connect directly via Indian IVR">
+              <i data-lucide="phone-call" class="w-4 h-4"></i>
+            </button>
+          ` : ''}
           <button onclick="pitchDirectoryLead('${l.id}')" class="p-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-md transition-all" title="Draft AI Outreach">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
           </button>
@@ -1282,6 +1287,11 @@ function renderCrmTable(filter = 'all') {
       <td class="p-3 font-bold text-slate-800">${l.value}</td>
       <td class="p-3 text-right">
         <div class="flex items-center justify-end gap-1.5">
+          ${isIndianPhone(l.phone || l.contact) ? `
+            <button onclick="launchIvrCallForLead('${l.phone || l.contact}', '${l.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md transition-all" title="Connect directly via Indian IVR">
+              <i data-lucide="phone-call" class="w-4 h-4"></i>
+            </button>
+          ` : ''}
           ${l.phone ? `
             <button onclick="quickWhatsAppLead('${l.phone}', '${l.name}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md" title="Message on WhatsApp">
               <i data-lucide="message-circle" class="w-4 h-4"></i>
@@ -1623,3 +1633,568 @@ Click on the **"Lead CRM Pipeline"** tab in the top navbar, then click the **"Ex
 • *"How do I export leads to CSV?"*
 • *"How to replace the ₹50k ad spend?"*`);
 }
+
+// ============================================================================
+// MODULE 6: INDIAN IVR VOICE STUDIO & MULTI-LINGUAL CALL SIMULATOR
+// ============================================================================
+
+function isIndianPhone(phone) {
+  if (!phone) return false;
+  const digits = phone.replace(/[^0-9]/g, '');
+  if (digits.startsWith('91') && digits.length >= 12) return true;
+  if (digits.length === 10 && /^[6-9]/.test(digits)) return true;
+  if (phone.includes('+91')) return true;
+  return false;
+}
+
+// Multi-Lingual Default IVR Scripts (7 Indian Languages)
+const DEFAULT_IVR_SCRIPTS = {
+  hi: {
+    langCode: 'hi-IN',
+    label: 'हिंदी (Hindi)',
+    welcome: 'नमस्ते! प्राणवेद योग अकादमी में आपका स्वागत है। योग शिक्षक प्रमाणन यानी Yoga Alliance USA टीचर ट्रेनिंग कोर्स के लिए 1 दबाएं। व्यक्तिगत ऑनलाइन योग क्लास और बैक पेन थेरेपी के लिए 2 दबाएं। कॉर्पोरेट योग और जिम पार्टनरशिप के लिए 3 दबाएं। व्हाट्सएप पर पूरा सिलेबस तुरंत पाने के लिए 9 दबाएं। हमारे योग काउंसलर से सीधे बात करने के लिए 0 दबाएं।',
+    key1: 'आपने योग शिक्षक प्रमाणन को चुना है। हमारा कोर्स Yoga Alliance USA द्वारा मान्यता प्राप्त है और वीकेंड्स पर लाइव चलता है। कोर्स फीस और सिलेबस की पूरी जानकारी आपके व्हाट्सएप पर भेज दी गई है।',
+    key2: 'आपने व्यक्तिगत ऑनलाइन योग क्लास को चुना है। पीठ दर्द, वजन घटाने और तनाव मुक्ति के लिए हमारे सीनियर शिक्षक लाइव गाइड करते हैं। 30 मिनट की फ्री ट्रायल क्लास का लिंक आपके व्हाट्सएप पर भेज दिया गया है।',
+    key3: 'आपने कॉर्पोरेट वेलनेस और पार्टनरशिप को चुना है। हमारी पार्टनरशिप टीम शीघ्र ही आपसे संपर्क करेगी।',
+    key9: 'धन्यवाद! संपूर्ण विवरण आपके व्हाट्सएप पर भेज दिया गया है। आपका दिन शुभ हो, नमस्ते!',
+    key0: 'आपकी कॉल हमारे सीनियर योग काउंसलर को ट्रांसफर की जा रही है, कृपया लाइन पर बने रहें।'
+  },
+  en: {
+    langCode: 'en-IN',
+    label: 'English',
+    welcome: 'Namaste and welcome to PranaVeda Yoga Academy! To explore Yoga Alliance USA Teacher Training and Certification, press 1. For personalized online yoga classes and back pain therapy, press 2. For corporate wellness and gym partnerships, press 3. To receive our full syllabus on WhatsApp immediately, press 9. To speak to a counselor, press 0.',
+    key1: 'You have selected Yoga Teacher Training Certification. Our Yoga Alliance USA accredited batches run on weekends with live Rishikesh gurus. We are texting you the fee details and curriculum right now on your WhatsApp number.',
+    key2: 'You have selected Online Personal Yoga Therapy. Our senior doctors design custom alignment routines for posture and stress. A free 30-minute trial session link is being sent to your WhatsApp.',
+    key3: 'You have selected Corporate Wellness & Partnerships. We conduct ergonomics and mindfulness workshops with zero setup required. Our partnerships manager will connect with you shortly.',
+    key9: 'Thank you! Our complete brochure, schedule, and fee breakdown have been dispatched to your WhatsApp number. Namaste!',
+    key0: 'Connecting your call to a senior yoga counselor. Please stay on the line.'
+  },
+  te: {
+    langCode: 'te-IN',
+    label: 'తెలుగు (Telugu)',
+    welcome: 'నమస్కారం! ప్రాణవేద యోగా అకాడమీకి స్వాగతం. యోగా అలయన్స్ USA గుర్తింపు పొందిన యోగా టీచర్ ట్రైనింగ్ సర్టిఫికేషన్ కోసం 1 నొక్కండి. పర్సనల్ ఆన్‌లైన్ యోగా క్లాసులు మరియు నడుము నొప్పి థెరపీ కోసం 2 నొక్కండి. కార్పొరేట్ యోగా మరియు భాగస్వామ్యాల కోసం 3 నొక్కండి. పూర్తి సిలబస్ వాట్సాప్‌లో పొందడానికి 9 నొక్కండి. నేరుగా మాట్లాడటానికి 0 నొక్కండి.',
+    key1: 'మీరు యోగా టీచర్ సర్టిఫికేషన్‌ను ఎంచుకున్నారు. పూర్తి సిలబస్ మరియు ఫీజు వివరాలు మీ వాట్సాప్‌కు పంపబడ్డాయి.',
+    key2: 'మీరు ఆన్‌లైన్ పర్సనల్ యోగా క్లాసులను ఎంచుకున్నారు. ఉచిత ట్రయల్ క్లాస్ లింక్ మీ వాట్సాప్‌కు పంపబడింది.',
+    key3: 'కార్పొరేట్ వెల్‌నెస్ వివరాల కోసం మా మేనేజర్ మిమ్మల్ని సంప్రదిస్తారు.',
+    key9: 'ధన్యవాదాలు! పూర్తి బ్రోచర్ మీ వాట్సాప్‌కు పంపబడింది. నమస్కారం!',
+    key0: 'మీ కాల్ సీనియర్ కౌన్సెలర్‌కు బదిలీ చేయబడుతోంది, దయచేసి వేచి ఉండండి.'
+  },
+  ta: {
+    langCode: 'ta-IN',
+    label: 'தமிழ் (Tamil)',
+    welcome: 'வணக்கம்! பிராணவேதா யோகா அகாடமிக்கு உங்களை அன்புடன் வரவேற்கிறோம். யோகா ஆசிரியர் சான்றிதழ் பயிற்சிக்கு 1-ஐ அழுத்தவும். தனிப்பயனாக்கப்பட்ட ஆன்லைன் யோகா வகுப்புகள் மற்றும் முதுகுவலி சிகிச்சைக்கு 2-ஐ அழுத்தவும். கார்ப்பரேட் யோகா மற்றும் ஜிம் பார்ட்னர்ஷிப்பிற்கு 3-ஐ அழுத்தவும். வாட்ஸ்அப்பில் முழு பாடத்திட்டத்தைப் பெற 9-ஐ அழுத்தவும். ஆலோசகருடன் பேச 0-ஐ அழுத்தவும்.',
+    key1: 'யோகா ஆசிரியர் பயிற்சியைத் தேர்ந்தெடுத்துள்ளீர்கள். சர்வதேச சான்றிதழ் பாடத்திட்டம் மற்றும் கட்டண விவரங்கள் உங்கள் வாட்ஸ்அப்பிற்கு அனுப்பப்பட்டுள்ளன.',
+    key2: 'ஆன்லைன் யோகா வகுப்புகளைத் தேர்ந்தெடுத்துள்ளீர்கள். 30 நிமிட இலவச சோதனை வகுப்பு இணைப்பு உங்கள் வாட்ஸ்அப்பிற்கு அனுப்பப்பட்டுள்ளது.',
+    key3: 'கார்ப்பரேட் பயிற்சி விவரங்களுக்கு எங்கள் குழு விரைவில் உங்களைத் தொடர்பு கொள்ளும்.',
+    key9: 'நன்றி! முழு கையேடு உங்கள் வாட்ஸ்அப்பிற்கு அனுப்பப்பட்டுள்ளது. வணக்கம்!',
+    key0: 'உங்கள் அழைப்பு எங்கள் ஆலோசகருக்கு மாற்றப்படுகிறது, தயவுசெய்து இணைப்பில் காத்திருக்கவும்.'
+  },
+  kn: {
+    langCode: 'kn-IN',
+    label: 'ಕನ್ನಡ (Kannada)',
+    welcome: 'ನಮಸ್ಕಾರ! ಪ್ರಾಣವೇದ ಯೋಗ ಅಕಾಡೆಮಿಗೆ ಸ್ವಾಗತ. ಯೋಗ ಅಲಯನ್ಸ್ ಯುಎಸ್ಎ ಮಾನ್ಯತೆ ಪಡೆದ ಯೋಗ ಶಿಕ್ಷಕರ ತರಬೇತಿಗಾಗಿ 1 ಒತ್ತಿರಿ. ಆನ್‌ಲೈನ್ ವೈಯಕ್ತಿಕ ಯೋಗ ತರಗತಿಗಳು ಮತ್ತು ಬೆನ್ನುನೋವಿನ ಚಿಕಿತ್ಸೆಗಾಗಿ 2 ಒತ್ತಿರಿ. ಕಾರ್ಪೊರೇಟ್ ಯೋಗಕ್ಕಾಗಿ 3 ಒತ್ತಿರಿ. ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸಂಪೂರ್ಣ ಸಿಲಬಸ್ ಪಡೆಯಲು 9 ಒತ್ತಿರಿ. ನೇರವಾಗಿ ಮಾತನಾಡಲು 0 ಒತ್ತಿರಿ.',
+    key1: 'ನೀವು ಯೋಗ ಶಿಕ್ಷಕರ ಸರ್ಟಿಫಿಕೇಶನ್ ಆಯ್ಕೆ ಮಾಡಿದ್ದೀರಿ. ಸಂಪೂರ್ಣ ಕೋರ್ಸ್ ವಿವರಗಳನ್ನು ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.',
+    key2: 'ವೈಯಕ್ತಿಕ ಯೋಗ ತರಗತಿಗಳ ಉಚಿತ ಟ್ರಯಲ್ ಲಿಂಕ್ ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ತಲುಪಿದೆ.',
+    key3: 'ಕಾರ್ಪೊರೇಟ್ ಯೋಗಕ್ಕಾಗಿ ನಮ್ಮ ಮ್ಯಾನೇಜರ್ ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲಿದ್ದಾರೆ.',
+    key9: 'ಧನ್ಯವಾದಗಳು! ಎಲ್ಲಾ ಮಾಹಿತಿ ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ರವಾನೆಯಾಗಿದೆ. ನಮಸ್ಕಾರ!',
+    key0: 'ನಿಮ್ಮ ಕರೆಯನ್ನು ಹಿರಿಯ ಕೌನ್ಸಿಲರ್‌ಗೆ ವರ್ಗಾಯಿಸಲಾಗುತ್ತಿದೆ, ದಯವಿಟ್ಟು ಲೈನ್‌ನಲ್ಲಿರಿ.'
+  },
+  ml: {
+    langCode: 'ml-IN',
+    label: 'മലയാളം (Malayalam)',
+    welcome: 'നമസ്കാരം! പ്രാണവേദ യോഗ അക്കാദമിയിലേക്ക് സ്വാഗതം. അന്താരാഷ്ട്ര യോഗ ടീച്ചർ ട്രെയിനിംഗ് സർട്ടിഫിക്കേഷനായി 1 അമർത്തുക. ഓൺലൈൻ പേഴ്സണൽ യോഗ ക്ലാസുകൾക്കും നടുവേദന തെറാപ്പിക്കുമായി 2 അമർത്തുക. കോർപ്പറേറ്റ് വെൽനസ് പ്രോഗ്രാമുകൾക്കായി 3 അമർത്തുക. മുഴുവൻ സിലബസും വാട്സ്ആപ്പിൽ ലഭിക്കാൻ 9 അമർത്തുക. കൗൺസിലറുമായി സംസാരിക്കാൻ 0 അമർത്തുക.',
+    key1: 'യോഗ ടീച്ചർ സർട്ടിഫിക്കേഷൻ തിരഞ്ഞെടുത്തതിന് നന്ദി. വിശദമായ വിവരങ്ങൾ നിങ്ങളുടെ വാട്സ്ആപ്പിലേക്ക് അയച്ചിട്ടുണ്ട്.',
+    key2: 'ഓൺലൈൻ യോഗ ക്ലാസുകളുടെ സൗജന്യ ട്രയൽ ലിങ്ക് വാട്സ്ആപ്പിൽ അയച്ചിട്ടുണ്ട്.',
+    key3: 'കോർപ്പറേറ്റ് വെൽനസ് ടീം ഉടൻ നിങ്ങളെ ബന്ധപ്പെടുന്നതാണ്.',
+    key9: 'നന്ദി! സമ്പൂർണ്ണ ബ്രോഷർ നിങ്ങളുടെ വാട്സ്ആപ്പിലേക്ക് അയച്ചു കഴിഞ്ഞു. നമസ്കാരം!',
+    key0: 'നിങ്ങളുടെ കോൾ സീനിയർ കൗൺസിലറിലേക്ക് ട്രാൻസ്ഫർ ചെയ്യുന്നു, ദയവായി കാത്തിരിക്കുക.'
+  },
+  bn: {
+    langCode: 'bn-IN',
+    label: 'বাংলা (Bengali)',
+    welcome: 'নমস্কার! প্রাণবেদ যোগ একাডেমিতে আপনাকে স্বাগতম। যোগ শিক্ষক সার্টিফিকেশন অর্থাৎ যোগা অ্যালায়েন্স ইউএসএ টিচার ট্রেনিং কোর্সের জন্য 1 টিপুন। ব্যক্তিগত অনলাইন যোগ ক্লাস এবং পিঠের ব্যথার থেরাপির জন্য 2 টিপুন। কর্পোরেট যোগা ও জিম পার্টনারশিপের জন্য 3 টিপুন। হোয়াটসঅ্যাপে সম্পূর্ণ সিলেবাস পেতে 9 টিপুন। আমাদের যোগ বিশেষজ্ঞের সাথে কথা বলতে 0 টিপুন।',
+    key1: 'আপনি যোগ শিক্ষক সার্টিফিকেশন বেছে নিয়েছেন। ঋষিকেশের লাইভ ক্লাসের সময়সূচী এবং ফি-র বিবরণ আপনার হোয়াটসঅ্যাপে পাঠানো হয়েছে।',
+    key2: 'আপনি অনলাইন ব্যক্তিগত যোগা বেছে নিয়েছেন। ৩০ মিনিটের ফ্রি ট্রায়াল ক্লাসের লিঙ্ক আপনার হোয়াটসঅ্যাপে পাঠানো হয়েছে।',
+    key3: 'কর্পোরেট ওয়েলনেস তথ্যের জন্য আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।',
+    key9: 'ধন্যবাদ! সমস্ত তথ্য আপনার হোয়াটসঅ্যাপে পাঠানো হয়েছে। নমস্কার!',
+    key0: 'আপনার কলটি আমাদের বিশেষজ্ঞের কাছে ট্রান্সফার করা হচ্ছে, অনুগ্রহ করে লাইনে থাকুন।'
+  }
+};
+
+// IVR State
+const IVR_STATE = {
+  currentLang: 'hi',
+  scripts: JSON.parse(JSON.stringify(DEFAULT_IVR_SCRIPTS)),
+  activeCall: false,
+  callTimerSec: 0,
+  timerInterval: null,
+  callStage: 'idle', // 'idle', 'greeting', 'waiting_dtmf', 'responding', 'ended'
+  currentLead: {
+    name: 'Gold Standard Fitness Club',
+    phone: '+91 98201 44552'
+  },
+  telephonyProvider: 'exotel'
+};
+
+// Initialize IVR from localStorage
+function initIvr() {
+  const savedScripts = localStorage.getItem('yogalead_ivr_scripts');
+  if (savedScripts) {
+    try {
+      IVR_STATE.scripts = { ...DEFAULT_IVR_SCRIPTS, ...JSON.parse(savedScripts) };
+    } catch(e) { console.error('Failed to parse saved IVR scripts', e); }
+  }
+  setIvrLanguage('hi');
+  generateTelephonyCode();
+}
+
+function setIvrLanguage(langKey) {
+  if (!IVR_STATE.scripts[langKey]) langKey = 'hi';
+  IVR_STATE.currentLang = langKey;
+
+  // Update UI tabs
+  document.querySelectorAll('.ivr-lang-btn').forEach(btn => {
+    btn.classList.remove('bg-rose-600', 'text-white', 'shadow-xs');
+    btn.classList.add('bg-slate-800', 'text-slate-300');
+  });
+
+  const activeBtn = document.getElementById(`ivr-lang-${langKey}`);
+  if (activeBtn) {
+    activeBtn.classList.add('bg-rose-600', 'text-white', 'shadow-xs');
+    activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+  }
+
+  const s = IVR_STATE.scripts[langKey];
+  const langLabel = document.getElementById('ivrCurrentLangLabel');
+  const simLang = document.getElementById('ivrSimLangName');
+  if (langLabel) langLabel.innerText = s.label;
+  if (simLang) simLang.innerText = s.label;
+
+  // Populate editor fields
+  const welcomeEl = document.getElementById('ivrWelcomeScript');
+  const k1El = document.getElementById('ivrKey1Response');
+  const k2El = document.getElementById('ivrKey2Response');
+  const k3El = document.getElementById('ivrKey3Response');
+  const k9El = document.getElementById('ivrKey9Response');
+  const k0El = document.getElementById('ivrKey0Response');
+
+  if (welcomeEl) welcomeEl.value = s.welcome;
+  if (k1El) k1El.value = s.key1;
+  if (k2El) k2El.value = s.key2;
+  if (k3El) k3El.value = s.key3;
+  if (k9El) k9El.value = s.key9;
+  if (k0El) k0El.value = s.key0;
+
+  generateTelephonyCode();
+}
+
+function updateCurrentIvrScript() {
+  const lang = IVR_STATE.currentLang;
+  IVR_STATE.scripts[lang].welcome = document.getElementById('ivrWelcomeScript').value;
+  IVR_STATE.scripts[lang].key1 = document.getElementById('ivrKey1Response').value;
+  IVR_STATE.scripts[lang].key2 = document.getElementById('ivrKey2Response').value;
+  IVR_STATE.scripts[lang].key3 = document.getElementById('ivrKey3Response').value;
+  IVR_STATE.scripts[lang].key9 = document.getElementById('ivrKey9Response').value;
+  IVR_STATE.scripts[lang].key0 = document.getElementById('ivrKey0Response').value;
+  generateTelephonyCode();
+}
+
+function saveIvrScriptToLocal() {
+  updateCurrentIvrScript();
+  localStorage.setItem('yogalead_ivr_scripts', JSON.stringify(IVR_STATE.scripts));
+  showToast(`Saved customized ${IVR_STATE.scripts[IVR_STATE.currentLang].label} IVR Script!`);
+}
+
+function resetIvrToDefault() {
+  if (confirm(`Reset ${IVR_STATE.scripts[IVR_STATE.currentLang].label} script to factory default?`)) {
+    IVR_STATE.scripts[IVR_STATE.currentLang] = JSON.parse(JSON.stringify(DEFAULT_IVR_SCRIPTS[IVR_STATE.currentLang]));
+    setIvrLanguage(IVR_STATE.currentLang);
+    localStorage.setItem('yogalead_ivr_scripts', JSON.stringify(IVR_STATE.scripts));
+    showToast('Reset script to default!');
+  }
+}
+
+// ----------------------------------------------------------------------------
+// AUDITORY DTMF ENGINE (Dual-Tone Multi-Frequency Web Audio)
+// ----------------------------------------------------------------------------
+let audioCtx = null;
+const DTMF_FREQUENCIES = {
+  '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+  '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+  '7': [852, 1209], '8': [852, 1336], '9': [852, 1477],
+  '*': [941, 1209], '0': [941, 1336], '#': [941, 1477]
+};
+
+function playDtmfTone(digit) {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const freqs = DTMF_FREQUENCIES[digit];
+    if (!freqs) return;
+
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.value = freqs[0];
+
+    osc2.type = 'sine';
+    osc2.frequency.value = freqs[1];
+
+    gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(audioCtx.currentTime + 0.2);
+    osc2.stop(audioCtx.currentTime + 0.2);
+  } catch (err) {
+    console.warn('AudioContext tone error', err);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// AUDITORY SPEECH SYNTHESIS ENGINE (TTS with Indian Language Accents)
+// ----------------------------------------------------------------------------
+function speakIvrPrompt(text, langKey, onEndCallback) {
+  if (!('speechSynthesis' in window)) {
+    console.warn('Speech synthesis not supported in this browser.');
+    if (onEndCallback) onEndCallback();
+    return;
+  }
+
+  window.speechSynthesis.cancel(); // Stop any pending speech
+
+  const langCode = IVR_STATE.scripts[langKey]?.langCode || 'hi-IN';
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = langCode;
+
+  const rateInput = document.getElementById('ivrSpeechRate');
+  utterance.rate = rateInput ? parseFloat(rateInput.value) || 0.95 : 0.95;
+  utterance.pitch = 1.0;
+
+  // Attempt to select native Indian voice if OS provides it
+  const voices = window.speechSynthesis.getVoices();
+  const matchedVoice = voices.find(v => v.lang.startsWith(langCode.slice(0, 2)) || v.lang === langCode);
+  if (matchedVoice) {
+    utterance.voice = matchedVoice;
+  }
+
+  utterance.onend = () => {
+    if (onEndCallback) onEndCallback();
+  };
+
+  utterance.onerror = (e) => {
+    console.warn('TTS playback note:', e);
+    if (onEndCallback) onEndCallback();
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+// ----------------------------------------------------------------------------
+// CALL SIMULATION STATE MACHINE
+// ----------------------------------------------------------------------------
+function startIvrCallSimulation() {
+  const phone = document.getElementById('ivrTargetPhone').value.trim();
+  if (!phone || phone.length < 8) {
+    showToast('Please enter an Indian phone number (e.g. +91 98201 44552)');
+    return;
+  }
+
+  IVR_STATE.activeCall = true;
+  IVR_STATE.callStage = 'calling';
+  IVR_STATE.callTimerSec = 0;
+
+  const dot = document.getElementById('ivrCallStatusDot');
+  const statusText = document.getElementById('ivrCallStatusText');
+  const timer = document.getElementById('ivrCallTimer');
+  const btnStart = document.getElementById('btnStartIvrCall');
+  const btnHangup = document.getElementById('btnHangupIvrCall');
+  const livePrompt = document.getElementById('ivrLivePromptText');
+
+  btnStart.disabled = true;
+  btnStart.classList.add('opacity-50');
+  btnHangup.disabled = false;
+  btnHangup.classList.remove('opacity-30', 'cursor-not-allowed');
+
+  dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+  statusText.innerText = `Dialing ${phone}...`;
+  livePrompt.innerText = `Ringing outbound call to ${phone}...`;
+
+  addIvrLog(`[CALL OUT] Outbound IVR call initiated to ${phone} (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`);
+
+  // Simulate pick up after 1.5 seconds
+  setTimeout(() => {
+    if (!IVR_STATE.activeCall) return;
+
+    dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
+    statusText.innerText = 'Call Connected - Playing Greeting';
+    IVR_STATE.callStage = 'greeting';
+
+    // Start timer
+    if (IVR_STATE.timerInterval) clearInterval(IVR_STATE.timerInterval);
+    IVR_STATE.timerInterval = setInterval(() => {
+      IVR_STATE.callTimerSec++;
+      const m = String(Math.floor(IVR_STATE.callTimerSec / 60)).padStart(2, '0');
+      const s = String(IVR_STATE.callTimerSec % 60).padStart(2, '0');
+      if (timer) timer.innerText = `${m}:${s}`;
+    }, 1000);
+
+    const welcomeScript = IVR_STATE.scripts[IVR_STATE.currentLang].welcome;
+    livePrompt.innerText = `"${welcomeScript}"`;
+    addIvrLog(`[CONNECTED] Lead answered. Playing IVR welcome menu.`);
+
+    // Speak audio
+    speakIvrPrompt(welcomeScript, IVR_STATE.currentLang, () => {
+      if (!IVR_STATE.activeCall) return;
+      IVR_STATE.callStage = 'waiting_dtmf';
+      statusText.innerText = 'Awaiting DTMF Input (Press 1, 2, 3, 9, or 0)';
+      livePrompt.innerText = 'Waiting for lead keypress... (Use the on-screen dialpad below)';
+    });
+  }, 1500);
+}
+
+function hangupIvrCallSimulation() {
+  IVR_STATE.activeCall = false;
+  IVR_STATE.callStage = 'ended';
+
+  if (IVR_STATE.timerInterval) clearInterval(IVR_STATE.timerInterval);
+  window.speechSynthesis.cancel();
+
+  const dot = document.getElementById('ivrCallStatusDot');
+  const statusText = document.getElementById('ivrCallStatusText');
+  const btnStart = document.getElementById('btnStartIvrCall');
+  const btnHangup = document.getElementById('btnHangupIvrCall');
+  const livePrompt = document.getElementById('ivrLivePromptText');
+
+  btnStart.disabled = false;
+  btnStart.classList.remove('opacity-50');
+  btnHangup.disabled = true;
+  btnHangup.classList.add('opacity-30', 'cursor-not-allowed');
+
+  dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-600';
+  statusText.innerText = 'Call Terminated - Idle';
+  livePrompt.innerText = 'Call ended. Select a language or press "Call & Listen" to test again.';
+
+  addIvrLog(`[HANGUP] Call ended. Total duration: ${document.getElementById('ivrCallTimer')?.innerText || '00:00'}`);
+}
+
+function pressDtmfKey(digit) {
+  playDtmfTone(digit);
+
+  if (!IVR_STATE.activeCall) {
+    showToast(`DTMF Tone '${digit}' generated. Start call to test flow response!`);
+    return;
+  }
+
+  const s = IVR_STATE.scripts[IVR_STATE.currentLang];
+  let responseText = '';
+  let outcome = '';
+
+  if (digit === '1') {
+    responseText = s.key1;
+    outcome = 'Lead Interested: Yoga Teacher Certification (YTTC)';
+  } else if (digit === '2') {
+    responseText = s.key2;
+    outcome = 'Lead Interested: Online Personal Yoga Classes';
+  } else if (digit === '3') {
+    responseText = s.key3;
+    outcome = 'Lead Interested: Corporate Wellness Workshop';
+  } else if (digit === '9') {
+    responseText = s.key9;
+    outcome = 'Action Triggered: Sent Curriculum & Syllabus on WhatsApp';
+  } else if (digit === '0') {
+    responseText = s.key0;
+    outcome = 'Action Triggered: Live Call Transfer to Instructor';
+  } else {
+    responseText = 'Invalid option. Please press 1, 2, 3, 9, or 0.';
+    outcome = `Unmapped Key '${digit}'`;
+  }
+
+  addIvrLog(`[KEYPRESS '${digit}'] ${outcome}`);
+
+  const livePrompt = document.getElementById('ivrLivePromptText');
+  const statusText = document.getElementById('ivrCallStatusText');
+
+  statusText.innerText = `Key ${digit} Pressed - Responding`;
+  livePrompt.innerText = `"${responseText}"`;
+
+  // Update lead in CRM with captured IVR outcome
+  recordIvrOutcomeToCrm(outcome);
+
+  // Play audio response
+  speakIvrPrompt(responseText, IVR_STATE.currentLang, () => {
+    if (!IVR_STATE.activeCall) return;
+    setTimeout(() => {
+      hangupIvrCallSimulation();
+    }, 2000);
+  });
+}
+
+function addIvrLog(msg) {
+  const container = document.getElementById('ivrCallLog');
+  if (!container) return;
+
+  const item = document.createElement('div');
+  item.className = 'text-[11px] text-slate-300 border-b border-slate-900/60 pb-0.5';
+  item.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  container.appendChild(item);
+  container.scrollTop = container.scrollHeight;
+}
+
+function recordIvrOutcomeToCrm(outcome) {
+  const phone = document.getElementById('ivrTargetPhone').value.trim();
+  const name = document.getElementById('ivrTargetName').innerText;
+
+  let existing = STATE.leads.find(l => l.phone === phone || l.contact.includes(phone));
+  if (existing) {
+    existing.status = outcome.includes('Transfer') || outcome.includes('Certification') ? 'Trial Booked' : 'Contacted';
+    existing.notes = `IVR Interaction (${IVR_STATE.scripts[IVR_STATE.currentLang].label}): ${outcome}`;
+  } else {
+    STATE.leads.unshift({
+      id: 'lead_' + Date.now(),
+      name: name || 'Indian IVR Lead',
+      category: 'Inbound IVR Qualified',
+      source: `IVR Call (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`,
+      offering: outcome.includes('Certification') ? 'Yoga Certification (YTTC)' : 'Yoga Training',
+      contact: phone,
+      phone: phone,
+      status: 'Contacted',
+      value: outcome.includes('Certification') ? '₹45,000' : '₹5,000',
+      notes: outcome,
+      date: new Date().toLocaleDateString()
+    });
+  }
+
+  saveToLocalStorage();
+  updateStats();
+  renderCrmTable();
+}
+
+// ----------------------------------------------------------------------------
+// TELEPHONY EXPORT & INTEGRATION GENERATOR
+// ----------------------------------------------------------------------------
+function setTelephonyProvider(provider) {
+  IVR_STATE.telephonyProvider = provider;
+
+  document.querySelectorAll('.telephony-btn').forEach(btn => {
+    btn.classList.remove('active', 'bg-emerald-600', 'text-white');
+    btn.classList.add('bg-slate-100', 'text-slate-700');
+  });
+
+  const activeBtn = document.getElementById(`telephony-btn-${provider}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active', 'bg-emerald-600', 'text-white');
+    activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
+  }
+
+  generateTelephonyCode();
+}
+
+function generateTelephonyCode() {
+  const provider = IVR_STATE.telephonyProvider;
+  const lang = IVR_STATE.currentLang;
+  const s = IVR_STATE.scripts[lang];
+  const targetPhone = document.getElementById('ivrTargetPhone')?.value || '+919820144552';
+  const cleanPhone = targetPhone.replace(/[^0-9]/g, '');
+  const outEl = document.getElementById('telephonyCodeOutput');
+  const labelEl = document.getElementById('telephonyCodeLabel');
+
+  if (!outEl) return;
+
+  if (provider === 'exotel') {
+    if (labelEl) labelEl.innerText = `Exotel (India) Call API Payload - ${s.label}`;
+    outEl.value = `// Exotel Outbound Voice Call Trigger (CURL / Node.js)
+// Trigger when a lead with +91 phone is discovered:
+curl -X POST "https://<your_api_key>:<your_api_token>@api.exotel.com/v1/Accounts/<account_sid>/Calls/connect.json" \\
+  -d "From=<Your_Exotel_Virtual_Number>" \\
+  -d "To=${cleanPhone}" \\
+  -d "CallerId=<Your_Exotel_Virtual_Number>" \\
+  -d "Url=https://my.exotel.com/<account_sid>/exoml/start_voice/<applet_id>" \\
+  -d "CustomField=${encodeURIComponent(lang)}" \\
+  -d "StatusCallback=https://your-crm.com/api/ivr-status"
+
+/* Exotel Applet Flow Configuration:
+Greeting: "${s.welcome.substring(0, 120)}..."
+Digits:
+  1 -> Action: Tag Lead as 'Certification', Trigger WhatsApp brochure
+  2 -> Action: Tag Lead as 'Personal Training', Send trial booking link
+  3 -> Action: Tag Lead as 'Corporate Wellness'
+  9 -> Action: Instant WhatsApp Syllabus Dispatch
+  0 -> Action: Forward call to Instructor (+91 98765 43210)
+*/`;
+  } else if (provider === 'twilio') {
+    if (labelEl) labelEl.innerText = `Twilio Voice TwiML XML - ${s.label}`;
+    outEl.value = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather numDigits="1" action="https://your-server.com/ivr-response" method="POST" timeout="8">
+    <Say language="${s.langCode}" voice="Polly.Aditi">
+      ${s.welcome}
+    </Say>
+  </Gather>
+  <Say language="${s.langCode}">We did not receive any input. Goodbye!</Say>
+  <Hangup/>
+</Response>`;
+  } else {
+    if (labelEl) labelEl.innerText = `Generic Webhook JSON (n8n / Make / Zapier)`;
+    outEl.value = JSON.stringify({
+      event: "trigger_outbound_ivr",
+      timestamp: new Date().toISOString(),
+      lead: {
+        phone: targetPhone,
+        country: "India",
+        language: s.label,
+        languageCode: s.langCode
+      },
+      ivrConfig: {
+        greetingAudioText: s.welcome,
+        menuActions: {
+          "1": { offering: "Yoga Teacher Training", responseAudio: s.key1 },
+          "2": { offering: "Online Yoga Therapy", responseAudio: s.key2 },
+          "3": { offering: "Corporate Wellness", responseAudio: s.key3 },
+          "9": { action: "whatsapp_syllabus_dispatch", responseAudio: s.key9 },
+          "0": { action: "live_transfer_agent", transferNumber: "+919876543210" }
+        }
+      }
+    }, null, 2);
+  }
+}
+
+function launchIvrCallForLead(phone, name) {
+  switchTab('ivr');
+  const phoneEl = document.getElementById('ivrTargetPhone');
+  const nameEl = document.getElementById('ivrTargetName');
+  if (phoneEl) phoneEl.value = phone;
+  if (nameEl) nameEl.innerText = name || 'Indian Business Lead';
+  generateTelephonyCode();
+  showToast(`Loaded ${name || phone} into IVR Studio. Ready to connect!`);
+}
+
+function loadLeadIntoIvrFromPicker() {
+  const indianLeads = STATE.leads.filter(l => isIndianPhone(l.phone || l.contact));
+  if (indianLeads.length === 0) {
+    showToast('No Indian phone leads in CRM yet. Showing default lead.');
+    return;
+  }
+  const randomLead = indianLeads[Math.floor(Math.random() * indianLeads.length)];
+  launchIvrCallForLead(randomLead.phone || randomLead.contact, randomLead.name);
+}
+
+// Initialize IVR when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initIvr);
+} else {
+  initIvr();
+}
+

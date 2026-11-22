@@ -150,6 +150,12 @@
           <i data-lucide="message-square" class="w-4 h-4"></i>
           AI Outreach Studio
         </button>
+        <button onclick="switchTab('ivr')" id="tab-btn-ivr"
+          class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+          <i data-lucide="phone-call" class="w-4 h-4 text-rose-500"></i>
+          IVR Voice Studio
+          <span class="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-mono font-bold">India (+91)</span>
+        </button>
         <button onclick="switchTab('crm')" id="tab-btn-crm"
           class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="users" class="w-4 h-4"></i>
@@ -755,6 +761,296 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4.5. IVR CALL STUDIO (INDIA +91)           -->
+    <!-- ========================================== -->
+    <div id="tab-content-ivr" class="hidden space-y-6">
+
+      <!-- IVR Header Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 rounded-2xl p-6 text-white border border-slate-800 shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-4xl space-y-3">
+          <div class="inline-flex items-center gap-2 bg-rose-500/20 text-rose-300 text-xs px-2.5 py-1 rounded-full border border-rose-500/30 font-mono">
+            <i data-lucide="phone-call" class="w-3.5 h-3.5"></i> India Direct Telephony & Voice Qualification Engine
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Interactive Voice Response (IVR) Studio</h2>
+          <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Directly connect with Indian leads via automated voice IVR before spending ad rupees. Design call menus, questions, and responses with native multi-language voice playback across <strong>Hindi, English, Telugu, Tamil, Kannada, Malayalam, and Bengali</strong>.
+          </p>
+          <!-- Multi-language selection tabs -->
+          <div class="pt-2 flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold mr-1">Active Language:</span>
+            <button onclick="setIvrLanguage('hi')" id="ivr-lang-hi" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-rose-600 text-white shadow-xs">हिंदी (Hindi)</button>
+            <button onclick="setIvrLanguage('en')" id="ivr-lang-en" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">English</button>
+            <button onclick="setIvrLanguage('te')" id="ivr-lang-te" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">తెలుగు (Telugu)</button>
+            <button onclick="setIvrLanguage('ta')" id="ivr-lang-ta" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">தமிழ் (Tamil)</button>
+            <button onclick="setIvrLanguage('kn')" id="ivr-lang-kn" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">ಕನ್ನಡ (Kannada)</button>
+            <button onclick="setIvrLanguage('ml')" id="ivr-lang-ml" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">മലയാളം (Malayalam)</button>
+            <button onclick="setIvrLanguage('bn')" id="ivr-lang-bn" class="ivr-lang-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">বাংলা (Bengali)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Studio Layout: 2 Columns (Editor vs Simulator) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Column 1: Flow Builder & Script Editor (7 Cols) -->
+        <div class="lg:col-span-7 space-y-5">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <i data-lucide="sliders" class="w-4 h-4 text-rose-500"></i>
+                  Call Flow & Script Designer
+                </h3>
+                <p class="text-xs text-slate-500">Draft your welcome greeting and DTMF key options for <span id="ivrCurrentLangLabel" class="font-bold text-rose-600">हिंदी (Hindi)</span>.</p>
+              </div>
+              <button onclick="resetIvrToDefault()" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium">Reset to Default Script</button>
+            </div>
+
+            <!-- Greeting Node -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px]">1</span>
+                  Welcome Greeting & Menu Audio Prompt
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Plays immediately when lead picks up</span>
+              </div>
+              <textarea id="ivrWelcomeScript" rows="4" oninput="updateCurrentIvrScript()" class="w-full p-3 border border-slate-300 rounded-lg text-xs leading-relaxed font-sans focus:ring-2 focus:ring-rose-500 bg-white"></textarea>
+            </div>
+
+            <!-- DTMF Menu Options -->
+            <div class="space-y-3">
+              <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
+                Branching Menus & Captured Key Actions
+              </span>
+
+              <!-- Key 1 -->
+              <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-mono font-bold text-xs">1</span>
+                    Press 1: Yoga Teacher Certification (YTTC 200/300hr)
+                  </span>
+                  <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">High Ticket Lead</span>
+                </div>
+                <input type="text" id="ivrKey1Response" oninput="updateCurrentIvrScript()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs" placeholder="Response text played to user">
+              </div>
+
+              <!-- Key 2 -->
+              <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-mono font-bold text-xs">2</span>
+                    Press 2: 1-on-1 Online Yoga Classes & Therapy
+                  </span>
+                  <span class="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-bold">B2C Training</span>
+                </div>
+                <input type="text" id="ivrKey2Response" oninput="updateCurrentIvrScript()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs" placeholder="Response text played to user">
+              </div>
+
+              <!-- Key 3 -->
+              <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-mono font-bold text-xs">3</span>
+                    Press 3: Corporate Wellness & Gym Partnerships
+                  </span>
+                  <span class="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded font-bold">B2B Deal</span>
+                </div>
+                <input type="text" id="ivrKey3Response" oninput="updateCurrentIvrScript()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs" placeholder="Response text played to user">
+              </div>
+
+              <!-- Key 9 -->
+              <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded bg-emerald-700 text-white flex items-center justify-center font-mono font-bold text-xs">9</span>
+                    Press 9: Auto-Send Full Syllabus on WhatsApp
+                  </span>
+                  <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">Instant Trigger</span>
+                </div>
+                <input type="text" id="ivrKey9Response" oninput="updateCurrentIvrScript()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs" placeholder="Response text played to user">
+              </div>
+
+              <!-- Key 0 -->
+              <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded bg-amber-600 text-white flex items-center justify-center font-mono font-bold text-xs">0</span>
+                    Press 0: Transfer to Live Senior Counselor
+                  </span>
+                  <span class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold">Live Transfer</span>
+                </div>
+                <input type="text" id="ivrKey0Response" oninput="updateCurrentIvrScript()" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs" placeholder="Response text played to user">
+              </div>
+            </div>
+
+            <!-- Voice Controls & Save -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+              <div class="flex items-center gap-3 text-xs text-slate-500">
+                <label class="flex items-center gap-1 font-medium">
+                  Speech Rate: 
+                  <input type="range" id="ivrSpeechRate" min="0.8" max="1.3" step="0.1" value="0.95" class="w-20 accent-rose-600">
+                </label>
+              </div>
+              <button onclick="saveIvrScriptToLocal()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition-all">
+                <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Custom Script
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Virtual Phone Simulator & Dialpad (5 Cols) -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-5 text-white space-y-4">
+            
+            <!-- Lead Picker & Phone input -->
+            <div>
+              <label class="block text-xs font-mono text-slate-400 uppercase mb-1">Target Indian Lead (+91)</label>
+              <div class="flex gap-2">
+                <input type="text" id="ivrTargetPhone" value="+91 98201 44552" placeholder="+91 98765 43210" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs font-mono font-bold text-white focus:ring-2 focus:ring-rose-500">
+                <button onclick="loadLeadIntoIvrFromPicker()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300" title="Select Lead from CRM">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1 flex justify-between">
+                <span id="ivrTargetName">Gold Standard Fitness Club</span>
+                <span class="text-rose-400 font-mono">India Mobile</span>
+              </div>
+            </div>
+
+            <!-- Virtual Phone Call Screen -->
+            <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <div class="flex items-center gap-2">
+                  <span id="ivrCallStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                  <span id="ivrCallStatusText" class="font-mono text-slate-400">Idle - Ready to Call</span>
+                </div>
+                <span id="ivrCallTimer" class="font-mono text-slate-500">00:00</span>
+              </div>
+
+              <!-- Audio Waveform / Prompt Display -->
+              <div class="p-3 bg-slate-900/90 rounded-lg border border-slate-800 text-xs min-h-[70px] flex items-center justify-center text-center">
+                <p id="ivrLivePromptText" class="text-slate-300 text-[11px] leading-relaxed italic">
+                  Press "Call & Listen" to hear the IVR voice prompt in <span id="ivrSimLangName" class="font-bold text-rose-400">Hindi</span>.
+                </p>
+              </div>
+
+              <!-- Call Action Buttons -->
+              <div class="flex gap-2">
+                <button id="btnStartIvrCall" onclick="startIvrCallSimulation()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all">
+                  <i data-lucide="phone-call" class="w-3.5 h-3.5"></i> Call & Listen (TTS)
+                </button>
+                <button id="btnHangupIvrCall" onclick="hangupIvrCallSimulation()" disabled class="bg-rose-600 hover:bg-rose-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all">
+                  <i data-lucide="phone-off" class="w-3.5 h-3.5"></i> Hang Up
+                </button>
+              </div>
+            </div>
+
+            <!-- Interactive Dialpad with Real DTMF Tones -->
+            <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+              <div class="text-[11px] font-mono text-slate-400 text-center uppercase tracking-wider">
+                Interactive Touch Dialpad (Press Keys to Test)
+              </div>
+
+              <div class="grid grid-cols-3 gap-2.5 max-w-[240px] mx-auto">
+                <button onclick="pressDtmfKey('1')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">1</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">YTTC</span>
+                </button>
+                <button onclick="pressDtmfKey('2')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">2</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">B2C</span>
+                </button>
+                <button onclick="pressDtmfKey('3')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">3</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">Corp</span>
+                </button>
+                <button onclick="pressDtmfKey('4')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">4</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">GHI</span>
+                </button>
+                <button onclick="pressDtmfKey('5')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">5</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">JKL</span>
+                </button>
+                <button onclick="pressDtmfKey('6')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">6</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">MNO</span>
+                </button>
+                <button onclick="pressDtmfKey('7')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">7</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">PQRS</span>
+                </button>
+                <button onclick="pressDtmfKey('8')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">8</span>
+                  <span class="block text-[9px] text-slate-400 uppercase font-sans">TUV</span>
+                </button>
+                <button onclick="pressDtmfKey('9')" class="dialpad-btn py-3 bg-emerald-900/60 hover:bg-emerald-800 active:bg-emerald-600 active:text-white rounded-lg text-center transition-all font-mono border border-emerald-700/50">
+                  <span class="block text-base font-bold text-emerald-300">9</span>
+                  <span class="block text-[9px] text-emerald-400 uppercase font-sans">WhatsApp</span>
+                </button>
+                <button onclick="pressDtmfKey('*')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">*</span>
+                </button>
+                <button onclick="pressDtmfKey('0')" class="dialpad-btn py-3 bg-amber-900/60 hover:bg-amber-800 active:bg-amber-600 active:text-white rounded-lg text-center transition-all font-mono border border-amber-700/50">
+                  <span class="block text-base font-bold text-amber-300">0</span>
+                  <span class="block text-[9px] text-amber-400 uppercase font-sans">Agent</span>
+                </button>
+                <button onclick="pressDtmfKey('#')" class="dialpad-btn py-3 bg-slate-800 hover:bg-slate-700 active:bg-rose-600 active:text-white rounded-lg text-center transition-all font-mono">
+                  <span class="block text-base font-bold">#</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Response Log -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase">
+                <span>Real-Time Interaction Log</span>
+                <span class="text-rose-400">Captured in CRM</span>
+              </div>
+              <div id="ivrCallLog" class="text-xs font-mono text-slate-300 space-y-1 max-h-24 overflow-y-auto custom-scrollbar">
+                <div class="text-slate-500 italic">Call idle. Press 'Call & Listen' to start.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Telephony API & Cloud Connect (Exotel / Twilio / Webhook) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i>
+              Production Telephony Integration (Exotel, Twilio & Indian DIDs)
+            </h3>
+            <p class="text-xs text-slate-500">Deploy this IVR script to Indian cloud telephony providers with 1-click export.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="setTelephonyProvider('exotel')" id="telephony-btn-exotel" class="telephony-btn active px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white">Exotel (India #1)</button>
+            <button onclick="setTelephonyProvider('twilio')" id="telephony-btn-twilio" class="telephony-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Twilio TwiML</button>
+            <button onclick="setTelephonyProvider('webhook')" id="telephony-btn-webhook" class="telephony-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Webhook JSON</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <span id="telephonyCodeLabel" class="text-xs font-mono font-bold text-slate-700">Exotel Automated Outbound Call Payload</span>
+            <button onclick="copyToClipboard('telephonyCodeOutput')" class="text-xs text-emerald-700 hover:underline font-semibold flex items-center gap-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Script
+            </button>
+          </div>
+          <textarea id="telephonyCodeOutput" rows="6" readonly class="w-full p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg border border-slate-800 leading-relaxed"></textarea>
+        </div>
+      </div>
+
     </div>
 
     <!-- ========================================== -->
