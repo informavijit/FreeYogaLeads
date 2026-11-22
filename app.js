@@ -1904,6 +1904,15 @@ function syncTelephonyConfigUI() {
   const mWebhook = document.getElementById('modalWebhookUrl');
   const mProvider = document.getElementById('modalTelephonyProvider');
 
+  // Inline Card Elements
+  const inSid = document.getElementById('telephonySidInput');
+  const inApiKey = document.getElementById('telephonyApiKeyInput');
+  const inToken = document.getElementById('telephonyTokenInput');
+  const inCaller = document.getElementById('telephonyCallerIdInput');
+  const inAgent = document.getElementById('telephonyAgentPhoneInput');
+  const inSubdomain = document.getElementById('telephonySubdomainInput');
+  const inWebhook = document.getElementById('telephonyWebhookInput');
+
   if (mProvider) mProvider.value = TELEPHONY_CONFIG.provider || 'exotel';
   if (mSid) mSid.value = TELEPHONY_CONFIG.sid || '';
   if (mApiKey) mApiKey.value = TELEPHONY_CONFIG.apiKey || '';
@@ -1917,6 +1926,15 @@ function syncTelephonyConfigUI() {
   if (mTwilioCaller) mTwilioCaller.value = TELEPHONY_CONFIG.provider === 'twilio' ? TELEPHONY_CONFIG.callerId : '';
 
   if (mWebhook) mWebhook.value = TELEPHONY_CONFIG.webhookUrl || '';
+
+  // Sync Inline Card Fields
+  if (inSid) inSid.value = TELEPHONY_CONFIG.sid || '';
+  if (inApiKey) inApiKey.value = TELEPHONY_CONFIG.apiKey || '';
+  if (inToken) inToken.value = TELEPHONY_CONFIG.token || '';
+  if (inCaller) inCaller.value = TELEPHONY_CONFIG.callerId || '08047198800';
+  if (inAgent) inAgent.value = TELEPHONY_CONFIG.agentPhone || '+91 98703 47348';
+  if (inSubdomain) inSubdomain.value = TELEPHONY_CONFIG.subdomain || 'api.in.exotel.com';
+  if (inWebhook) inWebhook.value = TELEPHONY_CONFIG.webhookUrl || '';
 
   onModalProviderChange(TELEPHONY_CONFIG.provider || 'exotel');
   updateGatewayBadge();
@@ -2150,18 +2168,82 @@ function saveTelephonyModalConfig() {
 
 function saveTelephonyInlineConfig() {
   const sid = document.getElementById('telephonySidInput')?.value.trim() || '';
+  const apiKey = document.getElementById('telephonyApiKeyInput')?.value.trim() || '';
   const token = document.getElementById('telephonyTokenInput')?.value.trim() || '';
-  const callerId = document.getElementById('telephonyCallerIdInput')?.value.trim() || '+91 80 4719 8800';
+  const callerId = document.getElementById('telephonyCallerIdInput')?.value.trim() || '08047198800';
+  const agentPhone = document.getElementById('telephonyAgentPhoneInput')?.value.trim() || '+91 98703 47348';
+  const subdomain = document.getElementById('telephonySubdomainInput')?.value || 'api.in.exotel.com';
   const webhookUrl = document.getElementById('telephonyWebhookInput')?.value.trim() || '';
 
   TELEPHONY_CONFIG.sid = sid;
+  TELEPHONY_CONFIG.apiKey = apiKey;
   TELEPHONY_CONFIG.token = token;
   TELEPHONY_CONFIG.callerId = callerId;
+  TELEPHONY_CONFIG.agentPhone = agentPhone;
+  TELEPHONY_CONFIG.subdomain = subdomain;
   TELEPHONY_CONFIG.webhookUrl = webhookUrl;
 
   localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
   syncTelephonyConfigUI();
-  showToast('Saved Gateway Credentials!');
+  showToast('✅ Saved Gateway Credentials!');
+}
+
+async function testTelephonyInlineConnection() {
+  const btn = document.getElementById('btnTestInlineConnection');
+  const resultDiv = document.getElementById('telephonyInlineTestResult');
+  const provider = TELEPHONY_CONFIG.provider || 'exotel';
+
+  const sid = document.getElementById('telephonySidInput')?.value.trim() || '';
+  const apiKey = document.getElementById('telephonyApiKeyInput')?.value.trim() || '';
+  const token = document.getElementById('telephonyTokenInput')?.value.trim() || '';
+  const subdomain = document.getElementById('telephonySubdomainInput')?.value || 'api.in.exotel.com';
+
+  if (!sid || !token) {
+    if (resultDiv) {
+      resultDiv.className = 'md:col-span-3 p-2.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200 block';
+      resultDiv.innerText = provider === 'exotel' 
+        ? '⚠️ Please enter Exotel Account SID, API Key, and API Token above before testing.'
+        : '⚠️ Please enter Twilio Account SID and Auth Token before testing.';
+      resultDiv.classList.remove('hidden');
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="animate-spin inline-block mr-1">⏳</span> Testing...`;
+  }
+
+  try {
+    const res = await fetch('http://localhost:5000/test-gateway', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, sid, apiKey, token, subdomain })
+    });
+    const data = await res.json();
+    if (resultDiv) {
+      resultDiv.classList.remove('hidden');
+      if (data.valid) {
+        resultDiv.className = 'md:col-span-3 p-2.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-900 border border-emerald-300 block';
+        resultDiv.innerText = data.message || `✅ Successfully connected to ${provider.toUpperCase()} Gateway!`;
+      } else {
+        resultDiv.className = 'md:col-span-3 p-2.5 rounded-lg text-xs font-medium bg-rose-50 text-rose-900 border border-rose-300 block whitespace-pre-line';
+        resultDiv.innerText = data.message || `❌ Validation failed. Please check credentials.`;
+      }
+    }
+  } catch (err) {
+    if (resultDiv) {
+      resultDiv.classList.remove('hidden');
+      resultDiv.className = 'md:col-span-3 p-2.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-900 border border-amber-300 block';
+      resultDiv.innerText = `⚠️ Local Telephony Bridge (localhost:5000) check: ${err.message}.`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Test Connection`;
+      if (window.lucide) lucide.createIcons();
+    }
+  }
 }
 
 // Initialize IVR from localStorage
@@ -2935,6 +3017,7 @@ function recordIvrOutcomeToCrm(outcome) {
 // TELEPHONY EXPORT & INTEGRATION GENERATOR
 // ----------------------------------------------------------------------------
 function setTelephonyProvider(provider) {
+  TELEPHONY_CONFIG.provider = provider;
   IVR_STATE.telephonyProvider = provider;
 
   document.querySelectorAll('.telephony-btn').forEach(btn => {
@@ -2948,7 +3031,28 @@ function setTelephonyProvider(provider) {
     activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
   }
 
+  // Update inline card labels
+  const labelSid = document.getElementById('inlineLabelSid');
+  const labelApiKey = document.getElementById('inlineLabelApiKey');
+  const labelToken = document.getElementById('inlineLabelToken');
+  const containerApiKey = document.getElementById('inlineContainerApiKey');
+
+  if (provider === 'exotel') {
+    if (labelSid) labelSid.innerText = '1. Exotel Account SID (Handle)';
+    if (containerApiKey) containerApiKey.classList.remove('hidden');
+    if (labelToken) labelToken.innerText = '3. Exotel API Token';
+  } else if (provider === 'twilio') {
+    if (labelSid) labelSid.innerText = '1. Twilio Account SID';
+    if (containerApiKey) containerApiKey.classList.add('hidden');
+    if (labelToken) labelToken.innerText = '2. Twilio Auth Token';
+  } else {
+    if (labelSid) labelSid.innerText = 'Account Handle / Webhook Tag';
+    if (containerApiKey) containerApiKey.classList.add('hidden');
+    if (labelToken) labelToken.innerText = 'Webhook Auth Secret (Optional)';
+  }
+
   generateTelephonyCode();
+  updateGatewayBadge();
 }
 
 function generateTelephonyCode() {
