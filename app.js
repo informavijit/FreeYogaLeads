@@ -314,7 +314,7 @@ function getSuggestedAngle(cat) {
   if (cat === 'fitness_centre') return 'Upsell Trainers with Yoga Alliance Certification (YTTC 200hr)';
   if (cat === 'yoga') return 'Collaborative Masterclass / Advanced 300hr Certification';
   if (cat === 'coworking') return 'Corporate Desk Ergonomics & Lunch Yoga Workshops';
-  return 'Holistic Therapy & Retreat Guest Instructors';
+  return 'Holistic Wellness & Retreat Guest Instructors';
 }
 
 function generateSimulatedDirectoryLeads(category, city, country) {
@@ -630,18 +630,18 @@ function loadSeedSocialSignals() {
     },
     {
       id: 'sig_2',
-      platform: 'Reddit (r/backpain)',
+      platform: 'Reddit (r/flexibility)',
       author: 'u/DavidTechWorker',
-      title: 'Chronic L4-L5 disc herniation. Physio suggested gentle therapeutic yoga?',
-      body: 'Sitting 10 hours a day as a software engineer in Bangalore. Physio recommended 1-on-1 personalized yoga therapy rather than regular gym workouts. Looking for a trainer who knows anatomy. Ping me on WhatsApp +91 98450 77890 or david.techblr@gmail.com.',
+      title: 'Stiff posture and tight mobility from desk job. Looking for 1-on-1 online yoga coach?',
+      body: 'Sitting 10 hours a day as a software engineer in Bangalore. Looking for 1-on-1 personalized yoga classes rather than regular gym workouts. Looking for a certified instructor. Ping me on WhatsApp +91 98450 77890 or david.techblr@gmail.com.',
       intent: 'High Intent',
-      offering: 'B2C Personal Yoga Therapy',
+      offering: 'B2C Personal Online Yoga',
       date: '5 hours ago',
-      url: 'https://reddit.com/r/backpain',
+      url: 'https://reddit.com/r/flexibility',
       value: '₹6,000 / month',
       email: 'david.techblr@gmail.com',
       phone: '+91 98450 77890',
-      redditDm: 'https://www.reddit.com/message/compose/?to=DavidTechWorker&subject=Therapeutic%20Yoga%20Consultation',
+      redditDm: 'https://www.reddit.com/message/compose/?to=DavidTechWorker&subject=Personal%20Yoga%20Consultation',
       profileUrl: 'https://reddit.com/user/DavidTechWorker'
     },
     {
@@ -1028,7 +1028,7 @@ Would you like me to reserve a spot for you or your team?`;
 
 I came across your profile and was impressed by your fitness work.
 
-Many personal trainers and fitness instructors currently face a ceiling on their hourly rates. Adding an internationally accredited Yoga certification (Yoga Alliance RYS 200/300) typically allows instructors to expand their client base to therapy, mobility, and high-paying international online clients.
+Many personal trainers and fitness instructors currently face a ceiling on their hourly rates. Adding an internationally accredited Yoga certification (Yoga Alliance RYS 200/300) typically allows instructors to expand their client base to personal posture coaching, mobility, and high-paying international online clients.
 
 At ${brand}, we offer live, interactive teacher training cohorts taught by veteran Rishikesh instructors. Unlike expensive Western schools ($2,500–$3,500), our accredited curriculum is available at a fraction of that cost without compromising traditional depth or anatomical precision.
 
@@ -1046,29 +1046,29 @@ Make sure whatever course you choose is accredited by Yoga Alliance (RYS 200) an
 At ${brand}, our senior teachers from Rishikesh run interactive live online cohorts for working professionals. If you'd like an honest review of what to look for before enrolling anywhere, feel free to check our curriculum or DM me—happy to share our syllabus and free preparatory guide with zero pressure!`;
 
   } else if (angle === 'b2c_training') {
-    // B2C Personal Training / Therapy
+    // B2C Personal Training / Posture & Wellness
     STATE.activePitch.whatsappText = `Namaste ${leadName} 🙏
 
-I noticed you were looking for guided yoga sessions for posture, back relief, and overall wellness.
+I noticed you were looking for guided yoga sessions for posture, flexibility, and overall wellness.
 
 At *${brand}*, our senior teachers conduct *1-on-1 and small-group live online Zoom classes* tailored specifically to your body's needs:
 
 🧘‍♂️ *What makes our sessions different:*
 • Personal posture & alignment correction in real-time
-• Specialized routines for desk workers, lower back pain & flexibility
+• Specialized routines for desk workers, flexibility & core strength
 • Guided Pranayama & meditation to reset stress levels
 • Convenient morning & evening slots (IST, GMT, EST)
 
 Would you like to book a *free 30-minute private trial session* this week to experience it firsthand?`;
 
-    STATE.activePitch.emailSubject = `Personalized Yoga & Posture Therapy with ${brand}`;
+    STATE.activePitch.emailSubject = `Personalized Online Yoga & Posture Alignment with ${brand}`;
     STATE.activePitch.emailBody = `Hi ${leadName},
 
 I hope this finds you well. 
 
 If you are dealing with desk fatigue, stiffness, or looking to build sustainable core strength, generic recorded videos rarely solve the root cause. Real progress happens when an experienced teacher observes your alignment in real-time.
 
-At ${brand}, our instructors hold master's degrees in Yogic Sciences and focus on tailored 1-on-1 sessions. Whether your goal is flexibility, stress relief, or therapeutic recovery, we design a sequence suited to your physiology.
+At ${brand}, our instructors hold master's degrees in Yogic Sciences and focus on tailored 1-on-1 sessions. Whether your goal is flexibility, stress relief, or posture alignment, we design a sequence suited to your physiology.
 
 We'd love to host you for a complimentary 30-minute 1-on-1 consultation and live trial session. Let me know which morning or evening time works best for you!
 
@@ -1076,11 +1076,11 @@ Best,
 ${founder}
 ${STATE.settings.whatsapp}`;
 
-    STATE.activePitch.socialText = `Hey! Saw your question about online yoga for therapy and back pain. 
+    STATE.activePitch.socialText = `Hey! Saw your question about online yoga for flexibility and posture. 
 
-One important tip: avoid intense forward folds or rapid vinyasa flows if your lower back is irritated. Focus on gentle psoas releases, cat-cow variations, and supported bridge pose with diaphragmatic breathing. 
+One important tip: avoid rushing into rapid vinyasa flows without proper alignment. Focus on gentle psoas releases, cat-cow variations, and supported alignment with diaphragmatic breathing. 
 
-Our team at ${brand} teaches 1-on-1 therapeutic yoga live from Rishikesh. If you ever want a free posture assessment or some tailored routines to practice on your own, shoot me a DM and I'd be glad to send a free guide!`;
+Our team at ${brand} teaches 1-on-1 personalized yoga live from Rishikesh. If you ever want a free posture assessment or some tailored routines to practice on your own, shoot me a DM and I'd be glad to send a free guide!`;
 
   } else if (angle === 'corporate') {
     // Corporate Wellness
@@ -1125,7 +1125,7 @@ Would you be open to adding an extra *₹50,000 to ₹1,50,000 monthly revenue* 
 
 At *${brand}*, we partner with premier gyms to offer *Accredited Yoga Teacher Certifications (Yoga Alliance USA)* to your existing trainers and members on a 50-50 revenue share model.
 
-Your trainers get certified to offer yoga therapy, and your gym gets a brand-new revenue stream.
+Your trainers get certified to offer personalized yoga coaching, and your gym gets a brand-new revenue stream.
 
 Could we schedule a brief 5-minute call this week to discuss how this works?`;
 
@@ -1252,7 +1252,7 @@ function getLeadTemperature(l) {
   if (l.status === 'Trial Booked' || l.status === 'Enrolled' || text.includes('yttc') || text.includes('certification') || text.includes('transfer') || text.includes('key 1') || text.includes('key 0')) {
     return 'Hot';
   }
-  if (l.status === 'Contacted' || text.includes('therapy') || text.includes('classes') || text.includes('whatsapp') || text.includes('corporate') || text.includes('key 2') || text.includes('key 9') || text.includes('key 3')) {
+  if (l.status === 'Contacted' || text.includes('wellness') || text.includes('classes') || text.includes('whatsapp') || text.includes('corporate') || text.includes('key 2') || text.includes('key 9') || text.includes('key 3')) {
     return 'Warm';
   }
   return 'Cold';
@@ -1615,7 +1615,7 @@ async function processAssistantQuery(userInput) {
   if (inputLower.includes('how to use') || inputLower.includes('feature') || inputLower.includes('start') || inputLower.includes('help')) {
     appendChatMessage('bot', `Here is how to get the most out of YogaLeadAI:
 1. **Directory Finder:** Harvest gyms and fitness studios. Pitch their personal trainers on accredited Yoga Alliance certifications to charge higher rates.
-2. **Social Intent Hunter:** Scan Reddit and forums for individual students asking for online yoga courses or therapy.
+2. **Social Intent Hunter:** Scan Reddit and forums for individual students asking for online yoga courses or personal classes.
 3. **AI Outreach Studio:** Click the ✨ icon on any lead to generate ready-to-send WhatsApp, Email, or Reddit DMs.
 4. **CRM Pipeline:** Track leads from 'New' to 'Enrolled' and click 'Export CSV' for Excel.`);
     return;
@@ -3051,7 +3051,7 @@ async function processNextBulkIvrCall() {
   const langObj = IVR_STATE.scripts[langKey] || IVR_STATE.scripts.hi;
 
   // Determine DTMF user response intent:
-  // 45% want Certification (High Ticket!), 30% want Therapy/Classes, 15% WhatsApp Syllabus, 10% Corporate
+  // 45% want Certification (High Ticket!), 30% want Personal Classes, 15% WhatsApp Syllabus, 10% Corporate
   const intentRand = Math.random();
   let dtmfKey = '1';
   let intentLabel = 'Yoga Teacher Certification (YTTC)';

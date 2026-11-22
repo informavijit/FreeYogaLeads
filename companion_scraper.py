@@ -42,7 +42,7 @@ def scrape_reddit_intent_signals(keywords, limit=15):
                     
                     # Basic intent filter
                     text = (title + " " + body).lower()
-                    if any(term in text for term in ['looking for', 'recommend', 'cost', 'worth it', 'online course', 'training', 'certification', 'back pain']):
+                    if any(term in text for term in ['looking for', 'recommend', 'cost', 'worth it', 'online course', 'training', 'certification', 'posture', 'flexibility']):
                         signals.append({
                             'name': f"u/{author} (r/{subreddit})",
                             'category': 'Community Prospect',
@@ -167,7 +167,7 @@ def main():
     keywords = [
         "yoga teacher training online",
         "yoga certification cost",
-        "online yoga instructor back pain"
+        "online yoga instructor flexibility"
     ]
 
     reddit_leads = scrape_reddit_intent_signals(keywords, limit=10)

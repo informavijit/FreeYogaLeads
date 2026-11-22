@@ -9,7 +9,7 @@
 * **The Problem:** Your yoga startup spends **₹50,000 / day (~₹15,00,000 / month)** on Meta (Facebook/Instagram) and Google Ads. Customer Acquisition Cost (CAC) keeps climbing, ad fatigue is frequent, and delayed lead follow-ups waste up to 40% of ad spend.
 * **The Solution:** Combining the strengths of two proven open-source architectures:
   1. **[`gosom/Google-Maps-Scraper`](https://github.com/gosom/Google-Maps-Scraper):** B2B directory targeting. Scrapes gyms, crossfit boxes, and fitness studios across India, UAE, UK, and the US to upsell their existing trainers with **Yoga Alliance USA Teacher Certifications (YTTC 200/300hr)**, and targets corporate offices for wellness workshops.
-  2. **[`Kappaemme-git/codex-first-customer-finder-skill`](https://github.com/Kappaemme-git/codex-first-customer-finder-skill):** Social intent listening. Detects active, real-time demand signals on Reddit, forums, and communities where prospective students are asking *"Can someone recommend an affordable online yoga certification?"* or *"Need a private online yoga instructor for chronic back pain"*.
+  2. **[`Kappaemme-git/codex-first-customer-finder-skill`](https://github.com/Kappaemme-git/codex-first-customer-finder-skill):** Social intent listening. Detects active, real-time demand signals on Reddit, forums, and communities where prospective students are asking *"Can someone recommend an affordable online yoga certification?"* or *"Need a private online yoga instructor for flexibility & posture"*.
   3. **Multi-Channel AI Pitch Studio:** Drafts 1-click **WhatsApp messages**, **Cold Emails**, and **Social DMs** personalized to each prospect's exact context using free Google Gemini AI (or built-in high-converting smart templates).
 
 ---
@@ -70,7 +70,7 @@ You can test the platform right now without pushing anywhere:
 ### 3. 📡 Social Intent Hunter (Reddit & Community Signals)
 * **Preset Dropdowns + Custom Free-Text Search:** Select standard topics from the dropdown OR type any custom phrase (e.g., `looking for 200 hour online yoga teacher training USA`, `prenatal yoga classes`) without touching the code.
 * **Automated Contact Detail Extraction:** Automatically detects public emails (`user@gmail.com`), phone numbers/WhatsApp, and provides **1-Click Reddit DM** links directly to the user's inbox.
-* Filters for high-intent queries (seeking recommendations, pricing comparisons, therapy inquiries).
+* Filters for high-intent queries (seeking recommendations, pricing comparisons, personal coaching inquiries).
 * Direct link to original discussions to verify before reaching out.
 
 ### 4. 🤖 Interactive AI Copilot & Chat Assistant
