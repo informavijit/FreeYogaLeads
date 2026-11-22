@@ -283,25 +283,105 @@
         <pre class="bg-slate-900 p-4 rounded-lg text-emerald-300 text-xs overflow-x-auto"><code>interface LeadRecord {
   id: string;               // Unique ID: 'lead_' + timestamp
   name: string;             // Prospect or Business Name
-  category: string;         // 'Gym / Fitness Center' | 'Community Prospect'
-  source: string;           // 'Google Maps' | 'Reddit (r/yoga)'
+  temperature: 'Hot' | 'Warm' | 'Cold'; // Priority rating: Hot (YTTC/Agent), Warm (Therapy/Brochure), Cold (Drop)
+  category: string;         // 'Gym / Fitness Center' | 'Community Prospect' | 'Inbound IVR'
+  source: string;           // 'Google Maps' | 'Reddit (r/yoga)' | 'IVR (Telugu)'
   offering: string;         // 'Yoga Certification (YTTC)' | 'B2C Personal Training'
   contact: string;          // Direct phone number, email, or discussion permalink
   phone?: string;           // Normalized international phone number
   status: LeadStatus;       // 'New' | 'Contacted' | 'Trial Booked' | 'Enrolled' | 'Inactive'
   value: string;            // Estimated deal size: '₹45,000' | '$550' | '₹4,000/mo'
-  notes: string;            // Contextual angle, pain points, or previous interactions
+  notes: string;            // Contextual angle, pain points, or captured IVR DTMF return response
   date: string;             // ISO formatted creation date
 }</code></pre>
       </div>
     </section>
 
-    <!-- SECTION 4: AD SPEND REDUCTION ECONOMICS -->
+    <!-- SECTION 4: IVR TELEPHONY GATEWAY & RETURN-RESPONSE CLASSIFICATION -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="phone-call" class="w-6 h-6 text-rose-400"></i>
+          4. IVR Gateway & Lead Temperature Classification Engine
+        </h2>
+        <p class="text-sm text-slate-400">Architecture of the multi-lingual voice gateway, bulk campaign dispatcher, and return response qualification matrix.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Hot Leads -->
+        <div class="bg-slate-950 p-5 rounded-xl border border-rose-900/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">Priority 1</span>
+            <span class="text-xs font-extrabold text-rose-400">🔥 Hot Leads</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">Qualification Conditions:</h4>
+          <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4">
+            <li>Pressed <strong>Key 1:</strong> Yoga Teacher Certification (YTTC 200/300hr).</li>
+            <li>Pressed <strong>Key 0:</strong> Live Call Transfer to Senior Yoga Counselor.</li>
+            <li>High-intent Reddit inquiry comparing certification costs.</li>
+          </ul>
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-emerald-400 font-mono">
+            ➔ Auto-marked: <strong>Trial Booked</strong> (Value: ₹45,000)
+          </div>
+        </div>
+
+        <!-- Warm Leads -->
+        <div class="bg-slate-950 p-5 rounded-xl border border-amber-900/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Priority 2</span>
+            <span class="text-xs font-bold text-amber-400">☀️ Warm Leads</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">Qualification Conditions:</h4>
+          <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4">
+            <li>Pressed <strong>Key 2:</strong> 1-on-1 Online Yoga Classes & Therapy.</li>
+            <li>Pressed <strong>Key 9:</strong> Instant WhatsApp Brochure & Curriculum Dispatch.</li>
+            <li>Pressed <strong>Key 3:</strong> Corporate Wellness & Gym Partnerships.</li>
+          </ul>
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-amber-400 font-mono">
+            ➔ Auto-marked: <strong>Contacted</strong> (Value: ₹5,000–₹25,000)
+          </div>
+        </div>
+
+        <!-- Cold Leads -->
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Priority 3</span>
+            <span class="text-xs font-bold text-slate-400">❄️ Cold Leads</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">Qualification Conditions:</h4>
+          <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4">
+            <li>Call answered but prospect hung up before keypress.</li>
+            <li>Pressed unmapped or invalid DTMF digit.</li>
+            <li>Busy / Unanswered outbound dial attempts.</li>
+          </ul>
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 font-mono">
+            ➔ Auto-marked: <strong>Contacted (Cold)</strong> (Queued for SMS/WA)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bulk Engine Mechanics -->
+      <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3 text-xs text-slate-300 leading-relaxed">
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+          Dynamic Multi-Language Gateway (Keys 1 to 7) & Telephony Pipeline:
+        </h4>
+        <p>
+          When an outbound campaign to 50+ Indian phone numbers is launched, the IVR begins with the <strong>Multi-Language Audio Gateway</strong>:
+          <code class="text-rose-400 font-sans block bg-slate-900 p-2.5 rounded my-2">"For English press 1, हिंदी के लिए 2 दबाएं, తెలుగు కోసం 3 నొక్కండి, தமிழுக்கு 4, ಕನ್ನಡಕ್ಕಾಗಿ 5, മലയാളത്തിനായി 6, বাংলার জন্য 7"</code>
+          Upon DTMF capture of digit 1–7, the call state machine branches into that language's qualification questions. Every prospect's responses are recorded in real-time and synchronized directly with the browser's <code>localStorage</code> Lead CRM database.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 5: AD SPEND REDUCTION ECONOMICS -->
     <section class="space-y-6">
       <div class="border-b border-slate-800 pb-3">
         <h2 class="text-2xl font-bold text-white flex items-center gap-2">
           <i data-lucide="trending-down" class="w-6 h-6 text-emerald-400"></i>
-          4. Economics of Replacing the ₹50,000/Day Ad Spend
+          5. Economics of Replacing the ₹50,000/Day Ad Spend
         </h2>
         <p class="text-sm text-slate-400">Unit economics and mathematical justification for budget taper.</p>
       </div>
@@ -351,12 +431,12 @@
       </div>
     </section>
 
-    <!-- SECTION 5: DEPLOYMENT INSTRUCTIONS -->
+    <!-- SECTION 6: DEPLOYMENT INSTRUCTIONS -->
     <section class="space-y-4">
       <div class="border-b border-slate-800 pb-3">
         <h2 class="text-2xl font-bold text-white flex items-center gap-2">
           <i data-lucide="cloud" class="w-6 h-6 text-emerald-400"></i>
-          5. Deployment & Security Architecture
+          6. Deployment & Security Architecture
         </h2>
         <p class="text-sm text-slate-400">Zero infrastructure maintenance and strict client-side data isolation.</p>
       </div>
