@@ -1,10 +1,8 @@
 """
-YogaLeadAI - Local Cloud Telephony Gateway Bridge
-Runs on http://localhost:5000 to bridge browser calls directly to Indian Telephony Carriers (Exotel, Twilio)
-Bypasses browser CORS restrictions with zero external dependencies (uses standard Python library).
-
-Usage:
-  python telephony_bridge.py
+YogaLeadAI - Local Cloud Telephony Gateway Bridge & Indian Female Voice Engine
+Runs on http://localhost:5000:
+1. Indian Female Voice Engine (/tts): Streams authentic native Indian female audio across 7 Indian languages (Hindi, Indian English, Telugu, Tamil, Kannada, Malayalam, Bengali).
+2. Outbound Carrier Dispatcher (/call): Direct bridge to Exotel, Twilio Voice API, or generic Webhooks.
 """
 
 import http.server
@@ -18,6 +16,17 @@ import sys
 
 PORT = 5000
 
+# Native Indian Language TTS Codes
+LANG_CODE_MAP = {
+    'hi': 'hi',        # Hindi (Female)
+    'en': 'en-IN',     # Indian English (Female)
+    'te': 'te',        # Telugu (Female)
+    'ta': 'ta',        # Tamil (Female)
+    'kn': 'kn',        # Kannada (Female)
+    'ml': 'ml',        # Malayalam (Female)
+    'bn': 'bn'         # Bengali (Female)
+}
+
 class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         # Handle CORS preflight
@@ -28,14 +37,86 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        parsed_url = urllib.parse.urlparse(self.path)
+
+        # --------------------------------------------------------------------
+        # 1. INDIAN FEMALE VOICE TTS ENGINE ENDPOINT (/tts)
+        # --------------------------------------------------------------------
+        if parsed_url.path == '/tts':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            text = query.get('text', [''])[0]
+            lang = query.get('lang', ['hi'])[0]
+            
+            if not text:
+                self.send_response(400)
+                self.end_headers()
+                return
+
+            tl = LANG_CODE_MAP.get(lang, 'hi')
+
+            # Chunk text into reasonable sentences (Google TTS supports ~140 chars per query)
+            chunks = []
+            clean_text = text.replace('\n', ' ').strip()
+            # Split by common sentence / clause markers
+            sentences = clean_text.replace('।', '.').replace('|', '.').split('. ')
+            for s in sentences:
+                s = s.strip()
+                if not s:
+                    continue
+                while len(s) > 130:
+                    idx = s[:130].rfind(' ')
+                    if idx <= 0:
+                        idx = 130
+                    chunks.append(s[:idx])
+                    s = s[idx:].strip()
+                if s:
+                    chunks.append(s)
+
+            if not chunks:
+                chunks = [clean_text[:130]]
+
+            # Fetch and concatenate MP3 audio frames for seamless playback
+            audio_bytes = bytearray()
+            for chunk in chunks[:6]:  # Limit to 6 chunks for instant low-latency delivery
+                try:
+                    tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={tl}&q=" + urllib.parse.quote(chunk)
+                    req = urllib.request.Request(tts_url, headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    })
+                    with urllib.request.urlopen(req, timeout=6) as response:
+                        audio_bytes.extend(response.read())
+                except Exception as ex:
+                    print(f"   [TTS Stream Error] {ex}")
+                    break
+
+            if audio_bytes:
+                self.send_response(200)
+                self.send_header('Content-Type', 'audio/mpeg')
+                self.send_header('Content-Length', str(len(audio_bytes)))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Cache-Control', 'public, max-age=7200')
+                self.end_headers()
+                self.wfile.write(audio_bytes)
+                return
+            else:
+                self.send_response(502)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                return
+
+        # --------------------------------------------------------------------
+        # 2. STATUS & HEALTH CHECK ENDPOINT (/)
+        # --------------------------------------------------------------------
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         status_info = {
             "status": "online",
-            "service": "YogaLeadAI Telephony Bridge",
-            "supported_providers": ["exotel", "twilio", "generic_webhook"],
+            "service": "Bodhi School of Yoga Telephony Bridge & Indian Voice Engine",
+            "voiceTone": "Indian Female (Natural Studio)",
+            "supportedLanguages": ["Hindi", "English (India)", "Telugu", "Tamil", "Kannada", "Malayalam", "Bengali"],
+            "supportedProviders": ["exotel", "twilio", "generic_webhook"],
             "port": PORT
         }
         self.wfile.write(json.dumps(status_info).encode('utf-8'))
@@ -57,17 +138,19 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
         to_phone = req.get('to', '').strip()
         caller_id = req.get('callerId', '+918047198800')
         provider = req.get('provider', 'exotel')
-        sid = req.get('sid', '')
-        token = req.get('token', '')
+        sid = req.get('sid', '').strip()
+        token = req.get('token', '').strip()
         lang = req.get('language', 'Hindi')
 
         clean_to = ''.join(c for c in to_phone if c.isdigit())
         if clean_to.startswith('91') and len(clean_to) == 12:
             clean_to = clean_to[2:] # 10 digit Indian mobile
 
-        print(f"\n[BRIDGE CALL OUT] Target: +91 {clean_to} | Provider: {provider} | Lang: {lang}")
+        print(f"\n[TELEPHONY DISPATCH] To: +91 {clean_to} | Carrier: {provider} | Lang: {lang}")
 
-        # If Exotel credentials provided, perform real API dispatch to Exotel Carrier Trunk
+        # --------------------------------------------------------------------
+        # A. REAL EXOTEL INDIA OUTBOUND CALL DISPATCH
+        # --------------------------------------------------------------------
         if provider == 'exotel' and sid and token:
             exotel_url = f"https://api.exotel.com/v1/Accounts/{sid}/Calls/connect.json"
             auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
@@ -88,7 +171,8 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                 with urllib.request.urlopen(http_req, timeout=12) as response:
                     res_body = response.read().decode('utf-8')
                     res_json = json.loads(res_body)
-                    print(f"   ✅ Exotel Dispatched: Call SID {res_json.get('Call', {}).get('Sid')}")
+                    call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
+                    print(f"   ✅ Real Exotel Call Dispatched: SID {call_sid}")
                     
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
@@ -96,54 +180,121 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(json.dumps({
                         "status": "success",
-                        "carrier": "Exotel India",
-                        "callSid": res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}"),
-                        "message": "Outbound call dispatched to Indian carrier telecom trunk."
+                        "hasCredentials": True,
+                        "carrier": "Exotel India Telecom Trunk",
+                        "callSid": call_sid,
+                        "to": f"+91 {clean_to}",
+                        "message": f"Real call dispatched to +91 {clean_to} via Exotel India!"
                     }).encode('utf-8'))
                     return
             except urllib.error.HTTPError as he:
                 err_content = he.read().decode('utf-8')
                 print(f"   ❌ Exotel API Error: {he.code} - {err_content}")
-                self.send_response(200) # Return 200 with error payload for clean frontend handling
+                self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
                     "status": "carrier_error",
+                    "hasCredentials": True,
+                    "carrier": "Exotel India",
                     "httpCode": he.code,
-                    "message": f"Exotel API error: {err_content}"
+                    "message": f"Exotel API Error ({he.code}): {err_content}"
                 }).encode('utf-8'))
                 return
             except Exception as ex:
                 print(f"   ⚠️ Exotel Network Exception: {ex}")
 
-        # Local Simulated Carrier Handshake (For zero-cost testing or when keys are not entered)
-        call_sid = f"EXO_CARRIER_{clean_to[-6:] if len(clean_to) >= 6 else 'TEST'}_{int(time.time())}"
-        print(f"   📞 Dispatched via Local Telephony Engine. Call SID: {call_sid}")
+        # --------------------------------------------------------------------
+        # B. REAL TWILIO VOICE OUTBOUND CALL DISPATCH
+        # --------------------------------------------------------------------
+        elif provider == 'twilio' and sid and token:
+            twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Calls.json"
+            auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
+            target_e164 = f"+91{clean_to}"
+
+            # TwiML with Indian Voice
+            twiml = f'<Response><Say language="en-IN" voice="Polly.Aditi">Namaste from Bodhi School of Yoga. Please wait while we connect your counselor.</Say><Pause length="1"/></Response>'
+            payload = urllib.parse.urlencode({
+                'To': target_e164,
+                'From': caller_id,
+                'Twiml': twiml
+            }).encode('utf-8')
+
+            http_req = urllib.request.Request(twilio_url, data=payload, headers={
+                'Authorization': f"Basic {auth_str}",
+                'Content-Type': 'application/x-www-form-urlencoded'
+            })
+
+            try:
+                with urllib.request.urlopen(http_req, timeout=12) as response:
+                    res_body = response.read().decode('utf-8')
+                    res_json = json.loads(res_body)
+                    call_sid = res_json.get('sid', f"CA_{clean_to}")
+                    print(f"   ✅ Real Twilio Call Dispatched: SID {call_sid}")
+                    
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "status": "success",
+                        "hasCredentials": True,
+                        "carrier": "Twilio Voice Global Trunk",
+                        "callSid": call_sid,
+                        "to": target_e164,
+                        "message": f"Real call dispatched to {target_e164} via Twilio Voice!"
+                    }).encode('utf-8'))
+                    return
+            except urllib.error.HTTPError as he:
+                err_content = he.read().decode('utf-8')
+                print(f"   ❌ Twilio API Error: {he.code} - {err_content}")
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "status": "carrier_error",
+                    "hasCredentials": True,
+                    "carrier": "Twilio Voice",
+                    "httpCode": he.code,
+                    "message": f"Twilio API Error ({he.code}): {err_content}"
+                }).encode('utf-8'))
+                return
+            except Exception as ex:
+                print(f"   ⚠️ Twilio Network Exception: {ex}")
+
+        # --------------------------------------------------------------------
+        # C. ZERO-CREDENTIAL SIMULATION / GUIDANCE RESPONSE
+        # --------------------------------------------------------------------
+        call_sid = f"SIM_{clean_to[-6:] if len(clean_to) >= 6 else 'TEST'}_{int(time.time())}"
+        print(f"   ℹ️ Telephony Simulator: No Exotel/Twilio API keys provided. Call SID: {call_sid}")
         
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.wfile.write(json.dumps({
-            "status": "success",
-            "carrier": "Indian Carrier PRI Trunk (Bridge Mode)",
+            "status": "simulation_mode",
+            "hasCredentials": False,
+            "carrier": "Local Simulator (Zero Credentials)",
             "callSid": call_sid,
             "to": f"+91 {clean_to}",
             "callerId": caller_id,
-            "message": f"Dispatched outbound call to +91 {clean_to} ({lang})"
+            "message": "To dial physical Indian phone numbers over cellular networks, enter your Exotel or Twilio account credentials in Gateway Settings, or click 'Direct Dial via Phone' to call directly from your device."
         }).encode('utf-8'))
 
     def log_message(self, format, *args):
-        # Quiet standard HTTP logs
+        # Quiet standard HTTP log messages
         return
 
 def run_server():
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), TelephonyBridgeHandler) as httpd:
         print(f"================================================================")
-        print(f"  YogaLeadAI Telephony Bridge Active on http://localhost:{PORT}")
-        print(f"  Carrier Outbound Dispatcher: Exotel, Twilio & Webhooks")
+        print(f"  Bodhi School of Yoga Telephony Bridge Active: http://localhost:{PORT}")
+        print(f"  🎙️ Indian Female Voice Engine: Enabled (7 Languages)")
+        print(f"  📞 Carrier Outbound Dispatcher: Exotel India, Twilio, Webhook")
         print(f"================================================================")
         try:
             httpd.serve_forever()

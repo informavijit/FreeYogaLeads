@@ -798,7 +798,7 @@
         <!-- Column 1: Flow Builder & Script Editor (7 Cols) -->
         <div class="lg:col-span-7 space-y-5">
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
               <div>
                 <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
                   <i data-lucide="sliders" class="w-4 h-4 text-rose-500"></i>
@@ -806,7 +806,15 @@
                 </h3>
                 <p class="text-xs text-slate-500">Draft your welcome greeting and DTMF key options for <span id="ivrCurrentLangLabel" class="font-bold text-rose-600">हिंदी (Hindi)</span>.</p>
               </div>
-              <button onclick="resetIvrToDefault()" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium">Reset to Default Script</button>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <i data-lucide="sparkles" class="w-3 h-3 text-rose-600"></i> 🇮🇳 Indian Female Tone (Studio)
+                </span>
+                <button onclick="previewCurrentLanguageAudio()" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition-all" title="Listen to this greeting in natural Indian Female voice">
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5 text-rose-400"></i> ▶️ Listen Audio
+                </button>
+                <button onclick="resetIvrToDefault()" class="text-xs text-slate-500 hover:text-slate-800 underline font-medium">Reset</button>
+              </div>
             </div>
 
             <!-- Greeting Node -->
@@ -892,14 +900,22 @@
             <!-- Voice Controls & Save -->
             <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
               <div class="flex items-center gap-3 text-xs text-slate-500">
-                <label class="flex items-center gap-1 font-medium">
+                <span class="font-semibold text-slate-700 flex items-center gap-1">
+                  <i data-lucide="mic" class="w-3.5 h-3.5 text-rose-500"></i> Voice: 🇮🇳 Indian Female (Priya / Neerja)
+                </span>
+                <label class="flex items-center gap-1 font-medium ml-2">
                   Speech Rate: 
                   <input type="range" id="ivrSpeechRate" min="0.8" max="1.3" step="0.1" value="0.95" class="w-20 accent-rose-600">
                 </label>
               </div>
-              <button onclick="saveIvrScriptToLocal()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition-all">
-                <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Custom Script
-              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="previewCurrentLanguageAudio()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 transition-all">
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> Test Female Voice
+                </button>
+                <button onclick="saveIvrScriptToLocal()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition-all">
+                  <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Custom Script
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -949,25 +965,31 @@
                 </p>
               </div>
 
-              <!-- Call Action Buttons: Primary Outbound Call & Secondary Test/Hangup -->
+              <!-- Call Action Buttons: Cloud Carrier, Direct Phone/SIM, Audio Test -->
               <div class="space-y-2">
-                <!-- PRIMARY OUTBOUND CALL ACTION -->
+                <!-- PRIMARY CARRIER CLOUD CALL -->
                 <button id="btnPlaceRealIvrCall" onclick="placeRealIvrCall()" class="w-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-700 hover:from-rose-500 hover:to-rose-600 active:scale-[0.99] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition-all border border-rose-500/50">
                   <i data-lucide="phone-outgoing" class="w-4 h-4 text-rose-200"></i>
-                  <span class="tracking-wide text-xs sm:text-sm font-bold">📞 Place Real Outbound IVR Call to Number</span>
+                  <span class="tracking-wide text-xs sm:text-sm font-bold">📞 Place Outbound IVR Call (Cloud Gateway)</span>
                 </button>
 
-                <!-- SECONDARY IN-BROWSER AUDIO TEST & HANG UP -->
-                <div class="flex gap-2">
-                  <button id="btnStartIvrCall" onclick="startIvrCallSimulation()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all" title="Listen to voice prompts locally in your browser">
-                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span>🎧 Test Audio (Browser TTS)</span>
+                <!-- DIRECT DEVICE DIAL & VOICE PREVIEW -->
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="directDialLeadPhone()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all" title="Instantly dial this Indian mobile number directly from your phone/device via SIM or Phone Link">
+                    <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+                    <span>📱 Direct Dial (SIM)</span>
                   </button>
-                  <button id="btnHangupIvrCall" onclick="hangupIvrCallSimulation()" disabled class="bg-slate-800 hover:bg-rose-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all">
-                    <i data-lucide="phone-off" class="w-3.5 h-3.5"></i>
-                    <span>Hang Up</span>
+                  <button id="btnStartIvrCall" onclick="startIvrCallSimulation()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all" title="Listen to IVR prompts in authentic Indian Female voice">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>🎧 Voice Preview</span>
                   </button>
                 </div>
+
+                <!-- HANG UP BUTTON -->
+                <button id="btnHangupIvrCall" onclick="hangupIvrCallSimulation()" disabled class="w-full bg-slate-800 hover:bg-rose-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-1.5 px-4 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all">
+                  <i data-lucide="phone-off" class="w-3.5 h-3.5"></i>
+                  <span>Hang Up Call</span>
+                </button>
               </div>
             </div>
 
@@ -1568,10 +1590,11 @@
 
       <div class="p-5 space-y-4 text-xs">
         <!-- Mode Banner -->
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5">
-          <i data-lucide="info" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
-          <div class="text-emerald-950 leading-relaxed text-[11px]">
-            <strong>Zero-Cost Sandbox Mode Active:</strong> If you leave API keys blank, the system automatically uses the <strong>Instant Cloud Dispatch Sandbox</strong>. You can place calls, test DTMF keypresses, and record responses in the CRM without any upfront telecom charges!
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
+          <i data-lucide="info" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+          <div class="text-amber-950 leading-relaxed text-[11px]">
+            <strong>To Make Real Calls to Physical Indian Handsets:</strong> Telecommunications in India require a telecom trunk (Exotel India or Twilio). Enter your Account SID and Token below. Outbound calls will physically ring target mobile phones with verified Indian Caller ID.<br/>
+            <strong>No Exotel/Twilio account?</strong> Simply use the <strong>"📱 Direct Dial (SIM)"</strong> button in the IVR dialer to call any lead directly from your phone or PC Phone Link with 1 click!
           </div>
         </div>
 

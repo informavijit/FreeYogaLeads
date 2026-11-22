@@ -2121,11 +2121,12 @@ async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
         carrier: data.carrier || 'Indian Telephony Bridge',
         callSid: data.callSid || `EXO_CALL_${cleanPhone.slice(-6)}`,
         status: data.status,
+        hasCredentials: Boolean(data.hasCredentials),
         message: data.message
       };
     }
   } catch (err) {
-    // Bridge silent fallback
+    // Bridge offline
   }
 
   // 2. Try Custom Webhook if configured
@@ -2146,6 +2147,7 @@ async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
         carrier: 'Webhook API Gateway',
         callSid: `WH_CALL_${cleanPhone.slice(-6)}_${Date.now().toString().slice(-4)}`,
         status: webhookResp.ok ? 'success' : 'webhook_status_' + webhookResp.status,
+        hasCredentials: true,
         message: 'Dispatched to Webhook'
       };
     } catch (e) {
@@ -2153,50 +2155,130 @@ async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
     }
   }
 
-  // 3. Fallback: Carrier PRI Trunk Simulation
+  // 3. Fallback: Local Simulation
   return {
-    carrier: 'Indian Telecom PRI Trunk',
-    callSid: `EXO_CALL_${cleanPhone.slice(-6)}_${Math.floor(100000 + Math.random() * 900000)}`,
-    status: 'success',
-    message: 'Carrier handshake completed'
+    carrier: 'Local Simulator',
+    callSid: `SIM_${cleanPhone.slice(-6)}_${Math.floor(100000 + Math.random() * 900000)}`,
+    status: 'simulation_mode',
+    hasCredentials: Boolean(TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token),
+    message: 'Local Simulator Mode'
   };
 }
 
 // ----------------------------------------------------------------------------
-// AUDITORY SPEECH SYNTHESIS ENGINE (TTS with Indian Language Accents)
+// AUDITORY SPEECH SYNTHESIS ENGINE (100% Indian Female Studio Voice)
 // ----------------------------------------------------------------------------
+let currentIvrAudio = null;
+
+function stopIvrAudio() {
+  if (currentIvrAudio) {
+    try {
+      currentIvrAudio.pause();
+      currentIvrAudio.currentTime = 0;
+    } catch(e) {}
+    currentIvrAudio = null;
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+// Quick Audio Preview in Indian Female Voice
+function previewCurrentLanguageAudio() {
+  const langKey = IVR_STATE.currentLang || 'hi';
+  const langObj = IVR_STATE.scripts[langKey] || IVR_STATE.scripts.hi;
+  showToast(`🎙️ Playing ${langObj.label} greeting in Indian Female voice...`);
+  speakIvrPrompt(langObj.welcome, langKey);
+}
+
+// Direct 1-Click Phone Dialer (Calls via Device SIM / Phone Link / Softphone)
+function directDialLeadPhone() {
+  const phone = document.getElementById('ivrTargetPhone')?.value.trim();
+  if (!phone || phone.length < 8) {
+    showToast('Please enter an Indian phone number to dial.');
+    return;
+  }
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  const fullNumber = cleanPhone.startsWith('91') ? `+${cleanPhone}` : `+91${cleanPhone}`;
+  const leadName = document.getElementById('ivrTargetName')?.innerText || 'Lead';
+
+  addIvrLog(`[DIRECT PHONE CALL] 📱 Launching native device dialer for ${fullNumber} (${leadName})`);
+  showToast(`📱 Dialing ${fullNumber} on your device SIM/Phone Link...`);
+  recordIvrOutcomeToCrm('Direct Phone Call Triggered from Device Dialer');
+
+  // Trigger system/browser telephony dialer
+  window.location.href = `tel:${fullNumber}`;
+}
+
 function speakIvrPrompt(text, langKey, onEndCallback) {
+  stopIvrAudio();
+
+  const langCode = IVR_STATE.scripts[langKey]?.langCode || 'hi-IN';
+
+  // 1. Primary: High-fidelity Indian Female audio stream via Telephony Bridge (port 5000)
+  const ttsUrl = `http://localhost:5000/tts?lang=${encodeURIComponent(langKey || 'hi')}&text=${encodeURIComponent(text.substring(0, 320))}`;
+  const audio = new Audio(ttsUrl);
+  currentIvrAudio = audio;
+
+  let completed = false;
+  const finish = () => {
+    if (completed) return;
+    completed = true;
+    currentIvrAudio = null;
+    if (onEndCallback) onEndCallback();
+  };
+
+  audio.onended = finish;
+  audio.onerror = (e) => {
+    console.warn('Audio Bridge TTS stream unavailable, falling back to browser synthesis', e);
+    currentIvrAudio = null;
+    fallbackBrowserIndianFemaleTts(text, langKey, onEndCallback);
+  };
+
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(err => {
+      console.warn('Browser audio autoplay restriction or bridge error:', err);
+      currentIvrAudio = null;
+      fallbackBrowserIndianFemaleTts(text, langKey, onEndCallback);
+    });
+  }
+}
+
+function fallbackBrowserIndianFemaleTts(text, langKey, onEndCallback) {
   if (!('speechSynthesis' in window)) {
-    console.warn('Speech synthesis not supported in this browser.');
     if (onEndCallback) onEndCallback();
     return;
   }
 
-  window.speechSynthesis.cancel(); // Stop any pending speech
-
+  window.speechSynthesis.cancel();
   const langCode = IVR_STATE.scripts[langKey]?.langCode || 'hi-IN';
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = langCode;
 
   const rateInput = document.getElementById('ivrSpeechRate');
   utterance.rate = rateInput ? parseFloat(rateInput.value) || 0.95 : 0.95;
-  utterance.pitch = 1.0;
+  utterance.pitch = 1.18; // Elevated pitch for natural Indian female cadence
 
-  // Attempt to select native Indian voice if OS provides it
+  // Scan specifically for Indian female voices
   const voices = window.speechSynthesis.getVoices();
-  const matchedVoice = voices.find(v => v.lang.startsWith(langCode.slice(0, 2)) || v.lang === langCode);
-  if (matchedVoice) {
-    utterance.voice = matchedVoice;
+  const indianFemaleVoice = voices.find(v => {
+    const name = v.name.toLowerCase();
+    const lang = v.lang.toLowerCase();
+    const isIndian = lang.includes('-in') || name.includes('india') || name.includes('hindi') || name.includes('aditi') || name.includes('neerja') || name.includes('swara') || name.includes('heera') || name.includes('google हिन्दी');
+    const isFemale = !name.includes('david') && !name.includes('george') && !name.includes('ravi') && !name.includes('male');
+    return isIndian && isFemale;
+  }) || voices.find(v => {
+    const name = v.name.toLowerCase();
+    return name.includes('female') || name.includes('zira') || name.includes('samantha');
+  });
+
+  if (indianFemaleVoice) {
+    utterance.voice = indianFemaleVoice;
   }
 
-  utterance.onend = () => {
-    if (onEndCallback) onEndCallback();
-  };
-
-  utterance.onerror = (e) => {
-    console.warn('TTS playback note:', e);
-    if (onEndCallback) onEndCallback();
-  };
+  utterance.onend = () => { if (onEndCallback) onEndCallback(); };
+  utterance.onerror = () => { if (onEndCallback) onEndCallback(); };
 
   window.speechSynthesis.speak(utterance);
 }
@@ -2246,50 +2328,54 @@ async function placeRealIvrCall() {
     btnHangup.classList.remove('opacity-30', 'cursor-not-allowed');
   }
 
-  const callSid = `EXO_CALL_${cleanPhone.slice(-6)}_${Math.floor(100000 + Math.random() * 900000)}`;
-
   dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-  statusText.innerText = `Dispatching IVR Call to ${phone}...`;
-  livePrompt.innerText = `Connecting via Indian Telephony Gateway (${callerId} ➔ ${phone})...`;
+  statusText.innerText = `Dispatching IVR Call to +91 ${cleanPhone}...`;
+  livePrompt.innerText = `Connecting via Indian Telephony Gateway (${callerId} ➔ +91 ${cleanPhone})...`;
 
-  addIvrLog(`[REAL OUTBOUND CALL] Dispatching call to ${phone} via Gateway (Caller ID: ${callerId}). Call SID: ${callSid}`);
-  showToast(`📞 Placing Outbound IVR Call to ${phone}...`);
+  showToast(`📞 Placing Outbound Call to +91 ${cleanPhone}...`);
 
-  // If user configured a Webhook URL, send real HTTP POST
-  if (TELEPHONY_CONFIG.webhookUrl && TELEPHONY_CONFIG.webhookUrl.startsWith('http')) {
-    try {
-      fetch(TELEPHONY_CONFIG.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'outbound_ivr_triggered',
-          callSid: callSid,
-          to: phone,
-          callerId: callerId,
-          language: langLabel,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(e => console.warn('Webhook dispatch note:', e));
-    } catch(err) {
-      console.warn('Webhook fetch error:', err);
-    }
+  // Invoke real telephony carrier dispatch via localhost:5000
+  const dispatchRes = await dispatchRealTelephonyCall(phone, langKey, langLabel);
+
+  if (dispatchRes.status === 'success' && dispatchRes.hasCredentials) {
+    // REAL CARRIER DISPATCH SUCCEEDED (Exotel / Twilio)
+    dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+    statusText.innerText = `Carrier Live: Call SID ${dispatchRes.callSid}`;
+    livePrompt.innerText = `✅ Real phone call active on Indian telecom circle! Caller ID: ${callerId}. Target handset is ringing.`;
+    addIvrLog(`[REAL CARRIER DISPATCH] Success via ${dispatchRes.carrier}. Call SID: ${dispatchRes.callSid}`);
+    showToast(`✅ Real call dispatched via ${dispatchRes.carrier}! Handset is ringing.`);
+    recordIvrOutcomeToCrm(`Real Carrier Outbound Call Dispatched (${dispatchRes.carrier})`);
+  } else if (dispatchRes.status === 'carrier_error') {
+    // CARRIER RETURNED AN ERROR
+    dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+    statusText.innerText = `Carrier Error (${dispatchRes.carrier})`;
+    livePrompt.innerText = `⚠️ ${dispatchRes.message}. Check your API keys in Gateway Settings or click Direct Dial.`;
+    addIvrLog(`[CARRIER ERROR] ${dispatchRes.message}`);
+    alert(`Carrier Error from ${dispatchRes.carrier}:\n\n${dispatchRes.message}\n\nPlease check your credentials in "Gateway Settings", or click "📱 Direct Dial via Phone / SIM" to call immediately from your device.`);
+    hangupIvrCallSimulation();
+    return;
+  } else {
+    // SIMULATION / NO CREDENTIALS CONFIGURED
+    dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+    statusText.innerText = `Simulator Active (No Carrier Keys)`;
+    livePrompt.innerText = `ℹ️ No Exotel/Twilio API keys configured. Simulating handset ring and playing Bodhi School of Yoga Indian Female voice greeting. To dial a real phone over cellular, enter API keys in Gateway Settings or click "Direct Dial (SIM)".`;
+    addIvrLog(`[INFO] Cloud Gateway credentials not found. Simulating handset handshake and playing Indian Female voice prompt.`);
   }
 
-  // Telecom Ringing Simulation Step 1 (after 1.2s)
+  // Telecom Ringing Step (after 1.2s)
   setTimeout(() => {
     if (!IVR_STATE.activeCall) return;
 
     dot.className = 'w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping';
-    statusText.innerText = `Handset Ringing... (${phone})`;
-    livePrompt.innerText = `Ringing lead mobile device on Indian telecom circle... Caller ID: ${callerId}`;
-    addIvrLog(`[RINGER] Outbound PRI/SIP Trunk ringing lead handset.`);
+    statusText.innerText = `Handset Ringing... (+91 ${cleanPhone})`;
+    addIvrLog(`[RINGER] Telecom PRI/SIP Trunk ringing +91 ${cleanPhone}.`);
 
-    // Lead Answers Step 2 (after 2.2s)
+    // Lead Answers Step (after 2.2s)
     setTimeout(() => {
       if (!IVR_STATE.activeCall) return;
 
       dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
-      statusText.innerText = `Call Connected! Playing Greeting (${langLabel})`;
+      statusText.innerText = `Call Connected! Playing Indian Female Greeting (${langLabel})`;
       IVR_STATE.callStage = 'greeting';
 
       // Start timer
@@ -2303,17 +2389,16 @@ async function placeRealIvrCall() {
 
       const welcomeScript = langObj?.welcome || '';
       livePrompt.innerText = `"${welcomeScript}"`;
-      addIvrLog(`[ANSWERED] Lead answered call. Playing ${langLabel} IVR options menu.`);
+      addIvrLog(`[ANSWERED] Lead answered call. Playing ${langLabel} Bodhi School of Yoga IVR options in authentic Indian female voice.`);
 
-      // Log immediately into CRM as Contacted (Outbound IVR Dispatched)
       recordIvrOutcomeToCrm('Outbound IVR Call Connected & Greeting Delivered');
 
-      // Speak audio prompt in browser so operator can monitor live
+      // Speak audio prompt in authentic Indian female voice
       speakIvrPrompt(welcomeScript, langKey, () => {
         if (!IVR_STATE.activeCall) return;
         IVR_STATE.callStage = 'waiting_dtmf';
         statusText.innerText = 'Call Live - Awaiting Lead DTMF Key (1, 2, 3, 9, 0)';
-        livePrompt.innerText = 'Call connected! Lead is now pressing keys or selecting options on phone dialpad.';
+        livePrompt.innerText = 'Call connected! Lead is now selecting options on dialpad.';
       });
 
     }, 2000);
@@ -2354,17 +2439,17 @@ function startIvrCallSimulation() {
   btnHangup.classList.remove('opacity-30', 'cursor-not-allowed');
 
   dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-  statusText.innerText = `Audio Test: Dialing ${phone}...`;
-  livePrompt.innerText = `Testing voice synthesis for ${phone}...`;
+  statusText.innerText = `Voice Preview: Playing Indian Female Greeting...`;
+  livePrompt.innerText = `Synthesizing authentic Indian Female voice for Bodhi School of Yoga...`;
 
-  addIvrLog(`[AUDIO TEST] Voice preview initiated for ${phone} (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`);
+  addIvrLog(`[VOICE PREVIEW] Playing Indian Female greeting for ${phone} (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`);
 
-  // Simulate pick up after 1.5 seconds
+  // Simulate pick up after 1 second
   setTimeout(() => {
     if (!IVR_STATE.activeCall) return;
 
     dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
-    statusText.innerText = 'Test Connected - Playing Greeting Audio';
+    statusText.innerText = 'Playing Greeting in Indian Female Voice';
     IVR_STATE.callStage = 'greeting';
 
     // Start timer
@@ -2378,20 +2463,22 @@ function startIvrCallSimulation() {
 
     const welcomeScript = IVR_STATE.scripts[IVR_STATE.currentLang].welcome;
     livePrompt.innerText = `"${welcomeScript}"`;
-    addIvrLog(`[TEST CONNECTED] Playing IVR welcome menu audio.`);
 
-    // Speak audio
+    // Speak audio in Indian female voice
     speakIvrPrompt(welcomeScript, IVR_STATE.currentLang, () => {
       if (!IVR_STATE.activeCall) return;
       IVR_STATE.callStage = 'waiting_dtmf';
       statusText.innerText = 'Audio Ready - Press 1, 2, 3, 9, or 0 on Dialpad';
       livePrompt.innerText = 'Waiting for keypress... (Use the on-screen dialpad below)';
     });
-  }, 1500);
+  }, 1000);
 }
 
 function hangupIvrCallSimulation() {
   IVR_STATE.activeCall = false;
+
+  // Stop audio immediately
+  stopIvrAudio();
 
   // If user hung up before pressing any key, record as Cold lead
   if (!IVR_STATE.dtmfRecorded && (IVR_STATE.callStage === 'waiting_dtmf' || IVR_STATE.callStage === 'greeting')) {
@@ -2401,7 +2488,6 @@ function hangupIvrCallSimulation() {
   IVR_STATE.callStage = 'ended';
 
   if (IVR_STATE.timerInterval) clearInterval(IVR_STATE.timerInterval);
-  window.speechSynthesis.cancel();
 
   const dot = document.getElementById('ivrCallStatusDot');
   const statusText = document.getElementById('ivrCallStatusText');
@@ -2421,7 +2507,7 @@ function hangupIvrCallSimulation() {
 
   dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-600';
   statusText.innerText = 'Call Terminated - Idle';
-  livePrompt.innerText = 'Call ended. Select a language or click "Place Real Outbound IVR Call" to connect.';
+  livePrompt.innerText = 'Call ended. Select a language or click "Place Outbound IVR Call" to connect.';
 
   addIvrLog(`[HANGUP] Call ended. Total duration: ${document.getElementById('ivrCallTimer')?.innerText || '00:00'}`);
 }
