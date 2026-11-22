@@ -1913,15 +1913,166 @@ function syncTelephonyConfigUI() {
 }
 
 function updateGatewayBadge() {
+  const badge = document.getElementById('ivrGatewayActiveBadge');
   const badgeText = document.getElementById('ivrGatewayBadgeText');
+  const btnReal = document.getElementById('btnPlaceRealIvrCall');
   if (!badgeText) return;
 
-  if (TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token) {
-    badgeText.innerText = `Exotel Live (${TELEPHONY_CONFIG.callerId || 'DID'})`;
-  } else if (TELEPHONY_CONFIG.webhookUrl) {
-    badgeText.innerText = 'Webhook API Live';
+  const hasCreds = Boolean(
+    (TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token) ||
+    (TELEPHONY_CONFIG.webhookUrl && TELEPHONY_CONFIG.webhookUrl.startsWith('http'))
+  );
+
+  if (hasCreds) {
+    let carrierName = 'Exotel Live';
+    if (TELEPHONY_CONFIG.webhookUrl) {
+      carrierName = 'Webhook API Live';
+    } else if (TELEPHONY_CONFIG.provider === 'twilio') {
+      carrierName = `Twilio Live (${TELEPHONY_CONFIG.callerId || 'DID'})`;
+    } else {
+      carrierName = `Exotel Live (${TELEPHONY_CONFIG.callerId || 'DID'})`;
+    }
+
+    badgeText.innerText = carrierName;
+    if (badge) {
+      badge.className = 'cursor-pointer text-emerald-400 font-mono text-[10px] flex items-center gap-1 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full hover:bg-emerald-900/60 transition-colors';
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span id="ivrGatewayBadgeText">${carrierName}</span>`;
+      badge.title = 'Telephony Gateway connected. Click to edit credentials.';
+    }
+    if (btnReal) {
+      btnReal.innerHTML = `
+        <i data-lucide="phone-outgoing" class="w-4 h-4 text-emerald-200"></i>
+        <span class="tracking-wide text-xs sm:text-sm font-bold">📞 Place Live IVR Call (${TELEPHONY_CONFIG.provider === 'twilio' ? 'Twilio' : (TELEPHONY_CONFIG.webhookUrl ? 'Webhook' : 'Exotel')})</span>
+      `;
+      btnReal.className = 'w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-700 hover:from-emerald-500 hover:to-emerald-600 active:scale-[0.99] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all border border-emerald-500/50';
+    }
   } else {
-    badgeText.innerText = 'Exotel / Cloud Ready';
+    badgeText.innerText = 'Gateway Keys Missing (Click to Setup)';
+    if (badge) {
+      badge.className = 'cursor-pointer text-amber-300 font-mono text-[10px] flex items-center gap-1 bg-amber-950/70 border border-amber-700/70 px-2 py-0.5 rounded-full hover:bg-amber-900/80 transition-colors';
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span id="ivrGatewayBadgeText">Gateway Keys Missing (Click to Setup)</span>`;
+      badge.title = 'Click to configure Exotel or Twilio API keys to make real outbound calls.';
+    }
+    if (btnReal) {
+      btnReal.innerHTML = `
+        <i data-lucide="phone-outgoing" class="w-4 h-4 text-rose-200"></i>
+        <span class="tracking-wide text-xs sm:text-sm font-bold">📞 Place Outbound IVR Call (Gateway Required)</span>
+      `;
+      btnReal.className = 'w-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-700 hover:from-rose-500 hover:to-rose-600 active:scale-[0.99] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition-all border border-rose-500/50';
+    }
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+// Missing Gateway Modal Handlers (Single Outbound Call)
+function openMissingGatewayModal(phone) {
+  const modal = document.getElementById('missingGatewayModal');
+  const targetEl = document.getElementById('missingGatewayTargetLead');
+  const leadName = document.getElementById('ivrTargetName')?.innerText || 'Indian Lead';
+  if (targetEl) targetEl.innerText = `${leadName} (${phone})`;
+  if (modal) {
+    modal.classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+function closeMissingGatewayModal() {
+  const modal = document.getElementById('missingGatewayModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function executeMissingGatewayDirectDial() {
+  closeMissingGatewayModal();
+  directDialLeadPhone();
+}
+
+function executeMissingGatewayOpenConfig() {
+  closeMissingGatewayModal();
+  toggleTelephonyConfigModal();
+}
+
+function executeMissingGatewaySimulator() {
+  closeMissingGatewayModal();
+  startIvrCallSimulation();
+}
+
+// Missing Gateway Modal Handlers (Bulk Campaign)
+function openBulkGatewayPromptModal(totalCount) {
+  const modal = document.getElementById('missingBulkGatewayModal');
+  const countEl = document.getElementById('missingBulkCountText');
+  if (countEl) countEl.innerText = `${totalCount} Indian numbers`;
+  if (modal) {
+    modal.classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+function closeBulkGatewayPromptModal() {
+  const modal = document.getElementById('missingBulkGatewayModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function executeBulkOpenConfig() {
+  closeBulkGatewayPromptModal();
+  toggleTelephonyConfigModal();
+}
+
+function executeBulkRunSimulator() {
+  closeBulkGatewayPromptModal();
+  startBulkIvrCampaign(true);
+}
+
+// Live Gateway Connection Validation (Test Button in Modal)
+async function testTelephonyGatewayConnection() {
+  const btn = document.getElementById('btnTestGatewayConnection');
+  const resultDiv = document.getElementById('modalGatewayTestResult');
+  const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
+  const sid = document.getElementById('modalExotelSid')?.value.trim() || '';
+  const token = document.getElementById('modalExotelToken')?.value.trim() || '';
+
+  if (!sid || !token) {
+    if (resultDiv) {
+      resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-200 block';
+      resultDiv.innerText = '⚠️ Please enter both Account SID and API Token above before testing.';
+      resultDiv.classList.remove('hidden');
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="animate-spin inline-block mr-1">⏳</span> Testing...`;
+  }
+
+  try {
+    const res = await fetch('http://localhost:5000/test-gateway', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, sid, token })
+    });
+    const data = await res.json();
+    if (resultDiv) {
+      resultDiv.classList.remove('hidden');
+      if (data.valid) {
+        resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-emerald-50 text-emerald-900 border border-emerald-300 block';
+        resultDiv.innerText = data.message || `✅ Successfully connected to ${provider.toUpperCase()} Gateway!`;
+      } else {
+        resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-rose-50 text-rose-900 border border-rose-300 block';
+        resultDiv.innerText = data.message || `❌ Validation failed. Please check credentials.`;
+      }
+    }
+  } catch (err) {
+    if (resultDiv) {
+      resultDiv.classList.remove('hidden');
+      resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-300 block';
+      resultDiv.innerText = `⚠️ Local Telephony Bridge (localhost:5000) check: ${err.message}.`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Test Connection`;
+      if (window.lucide) lucide.createIcons();
+    }
   }
 }
 
@@ -2383,6 +2534,17 @@ async function placeRealIvrCall() {
     return;
   }
 
+  // Intercept if no gateway credentials are configured
+  const hasGatewayKeys = Boolean(
+    (TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token) ||
+    (TELEPHONY_CONFIG.webhookUrl && TELEPHONY_CONFIG.webhookUrl.startsWith('http'))
+  );
+
+  if (!hasGatewayKeys) {
+    openMissingGatewayModal(phone);
+    return;
+  }
+
   const cleanPhone = phone.replace(/[^0-9]/g, '');
   const leadName = document.getElementById('ivrTargetName')?.innerText || `Lead (${phone})`;
   const langKey = IVR_STATE.currentLang || 'hi';
@@ -2434,6 +2596,11 @@ async function placeRealIvrCall() {
     addIvrLog(`[REAL CARRIER DISPATCH] Success via ${dispatchRes.carrier}. Call SID: ${dispatchRes.callSid}`);
     showToast(`✅ Real call dispatched via ${dispatchRes.carrier}! Handset is ringing.`);
     recordIvrOutcomeToCrm(`Real Carrier Outbound Call Dispatched (${dispatchRes.carrier})`);
+  } else if (dispatchRes.status === 'needs_credentials') {
+    // GATEWAY CREDENTIALS MISSING
+    hangupIvrCallSimulation();
+    openMissingGatewayModal(phone);
+    return;
   } else if (dispatchRes.status === 'carrier_error') {
     // CARRIER RETURNED AN ERROR
     dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
@@ -2444,11 +2611,11 @@ async function placeRealIvrCall() {
     hangupIvrCallSimulation();
     return;
   } else {
-    // SIMULATION / NO CREDENTIALS CONFIGURED
+    // FALLBACK SIMULATION WITH EXPLICIT LABEL
     dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-    statusText.innerText = `Simulator Active (No Carrier Keys)`;
-    livePrompt.innerText = `ℹ️ No Exotel/Twilio API keys configured. Simulating handset ring and playing Bodhi School of Yoga Indian Female voice greeting. To dial a real phone over cellular, enter API keys in Gateway Settings or click "Direct Dial (SIM)".`;
-    addIvrLog(`[INFO] Cloud Gateway credentials not found. Simulating handset handshake and playing Indian Female voice prompt.`);
+    statusText.innerText = `Simulator Active`;
+    livePrompt.innerText = `Playing Bodhi School of Yoga Indian Female voice greeting.`;
+    addIvrLog(`[SIMULATOR] Handset audio preview playing Indian Female voice prompt.`);
   }
 
   // Telecom Ringing Step (after 1.2s)
@@ -2960,7 +3127,7 @@ function handleBulkPhoneUpload(event) {
   reader.readAsText(file);
 }
 
-function startBulkIvrCampaign() {
+function startBulkIvrCampaign(forceSimulator = false) {
   const text = document.getElementById('bulkPhoneInput')?.value || '';
   const numbers = parseIndianNumbers(text);
 
@@ -2969,7 +3136,18 @@ function startBulkIvrCampaign() {
     return;
   }
 
+  const hasGatewayKeys = Boolean(
+    (TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token) ||
+    (TELEPHONY_CONFIG.webhookUrl && TELEPHONY_CONFIG.webhookUrl.startsWith('http'))
+  );
+
+  if (!hasGatewayKeys && !forceSimulator) {
+    openBulkGatewayPromptModal(numbers.length);
+    return;
+  }
+
   BULK_CAMPAIGN_STATE.isRunning = true;
+  BULK_CAMPAIGN_STATE.isSimulatorDemo = forceSimulator || !hasGatewayKeys;
   BULK_CAMPAIGN_STATE.queue = numbers;
   BULK_CAMPAIGN_STATE.currentIndex = 0;
   BULK_CAMPAIGN_STATE.results = [];
@@ -2988,13 +3166,14 @@ function startBulkIvrCampaign() {
   const statusDot = document.getElementById('bulkStatusDot');
   const statusLabel = document.getElementById('bulkStatusLabel');
   statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
-  statusLabel.innerText = `Campaign Active - Dispatching Calls (0/${numbers.length})`;
+  const modePrefix = BULK_CAMPAIGN_STATE.isSimulatorDemo ? '[Simulation Demo]' : `[${(TELEPHONY_CONFIG.provider || 'Carrier').toUpperCase()} Live]`;
+  statusLabel.innerText = `${modePrefix} Campaign Active - Dispatching Calls (0/${numbers.length})`;
 
   // Reset table
   const tbody = document.getElementById('bulkResultsTableBody');
   if (tbody) tbody.innerHTML = '';
 
-  showToast(`Initiating Bulk IVR Campaign to ${numbers.length} Indian leads...`);
+  showToast(`${modePrefix} Launching Bulk IVR Campaign to ${numbers.length} Indian leads...`);
 
   // Execute async call pipeline
   processNextBulkIvrCall();

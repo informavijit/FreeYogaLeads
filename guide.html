@@ -349,17 +349,30 @@
           </ol>
         </div>
 
-        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 space-y-2">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 space-y-3">
           <h4 class="font-bold flex items-center gap-1.5 text-slate-900">
-            <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i> Cloud Telephony Gateway Configuration (Exotel, Twilio & Webhooks):
+            <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i> Cloud Telephony Gateway: Making Real Outbound Calls in India
           </h4>
           <p class="text-xs leading-relaxed text-slate-600">
-            Click <strong>"Gateway Settings"</strong> beside the phone input or in the Telephony card below. 
-            You can enter your <strong>Exotel Account SID</strong>, <strong>API Token</strong>, and <strong>Virtual Caller DID (+91 80 4719 8800)</strong>, or supply a <strong>Webhook URL</strong> (n8n, Make, Zapier, MyOperator, Sarv).
+            To physically ring an Indian mobile phone (+91) over cellular networks (Airtel, Jio, Vi), telecommunication regulations (TRAI/DoT) mandate routing through a licensed telecom trunk. YogaLeadAI gives you <strong>3 flexible options</strong>:
           </p>
-          <p class="text-xs leading-relaxed text-emerald-800 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
-            💡 <strong>Zero-Cost Sandbox Mode:</strong> If you do not have an Exotel account yet, you can still test calling immediately! The built-in <strong>Instant Cloud Dispatch Sandbox</strong> provides realistic telecom handshakes (ringing, answered, DTMF tone playback, and automatic CRM classification) completely free with ₹0 spend!
-          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+              <span class="font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i> 1. Direct Dial (SIM / Device)</span>
+              <p class="text-slate-600 text-[11px]"><strong>100% Free • Zero Setup</strong>: Click <em>"📱 Direct Dial (SIM)"</em>. Opens your smartphone dialer, Windows Phone Link, or SIM card to call the Indian number directly right now.</p>
+            </div>
+            <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+              <span class="font-bold text-rose-700 flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> 2. Exotel / Twilio Gateway</span>
+              <p class="text-slate-600 text-[11px]"><strong>Automated Cloud IVR</strong>: Click <em>"Gateway Settings"</em> and enter your Exotel SID & Token (free ₹1,000 trial credits available at <a href="https://my.exotel.com/auth/register" target="_blank" class="text-rose-600 underline">exotel.com</a>) or Twilio Voice.</p>
+            </div>
+            <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+              <span class="font-bold text-slate-700 flex items-center gap-1"><i data-lucide="headphones" class="w-3.5 h-3.5"></i> 3. Audio Simulator</span>
+              <p class="text-slate-600 text-[11px]"><strong>Speaker Demo</strong>: Click <em>"🎧 Voice Preview"</em> to hear the authentic Bodhi School of Yoga Indian Female voice greeting through your PC speakers and test dialpad DTMF options.</p>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+            💡 <strong>Why did I see "Cloud Gateway credentials not found"?</strong> If you clicked <em>"Place Outbound IVR Call"</em> before entering your Exotel or Twilio API keys, the system notified you that carrier credentials are required to dispatch cellular radio signals. You can enter your keys in <em>Gateway Settings</em>, or simply click <em>"📱 Direct Dial (SIM)"</em> to call right now from your phone!
+          </div>
         </div>
       </div>
     </section>

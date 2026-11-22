@@ -941,10 +941,10 @@
               </div>
               <div class="text-[11px] text-slate-400 mt-1.5 flex justify-between items-center">
                 <span id="ivrTargetName" class="text-slate-300 font-medium truncate max-w-[180px]">Gold Standard Fitness Club</span>
-                <span id="ivrGatewayActiveBadge" class="text-emerald-400 font-mono text-[10px] flex items-center gap-1 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span id="ivrGatewayBadgeText">Exotel / Cloud Ready</span>
-                </span>
+                <button onclick="toggleTelephonyConfigModal()" id="ivrGatewayActiveBadge" class="cursor-pointer text-amber-300 font-mono text-[10px] flex items-center gap-1 bg-amber-950/70 border border-amber-700/70 px-2 py-0.5 rounded-full hover:bg-amber-900/80 transition-colors" title="Click to configure Exotel or Twilio API keys to make real outbound calls">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  <span id="ivrGatewayBadgeText">Gateway Keys Missing (Click to Setup)</span>
+                </button>
               </div>
             </div>
 
@@ -1593,9 +1593,27 @@
         <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
           <i data-lucide="info" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
           <div class="text-amber-950 leading-relaxed text-[11px]">
-            <strong>To Make Real Calls to Physical Indian Handsets:</strong> Telecommunications in India require a telecom trunk (Exotel India or Twilio). Enter your Account SID and Token below. Outbound calls will physically ring target mobile phones with verified Indian Caller ID.<br/>
+            <strong>To Make Real Calls to Physical Indian Handsets:</strong> Telecom regulations in India require a telecom trunk (Exotel India or Twilio). Enter your Account SID and Token below. Outbound calls will physically ring target mobile phones with verified Indian Caller ID.<br/>
             <strong>No Exotel/Twilio account?</strong> Simply use the <strong>"📱 Direct Dial (SIM)"</strong> button in the IVR dialer to call any lead directly from your phone or PC Phone Link with 1 click!
           </div>
+        </div>
+
+        <!-- Quick Signup Links for Free Trials -->
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+          <a href="https://my.exotel.com/auth/register" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center gap-2 group transition-all">
+            <span class="w-6 h-6 rounded bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-[10px]">EX</span>
+            <div class="flex-1 min-w-0">
+              <span class="font-bold text-slate-800 block truncate group-hover:text-rose-600">Exotel India Trial ↗</span>
+              <span class="text-[10px] text-slate-500">₹1,000 free +91 credits</span>
+            </div>
+          </a>
+          <a href="https://www.twilio.com/try-twilio" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center gap-2 group transition-all">
+            <span class="w-6 h-6 rounded bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-[10px]">TW</span>
+            <div class="flex-1 min-w-0">
+              <span class="font-bold text-slate-800 block truncate group-hover:text-rose-600">Twilio Voice Trial ↗</span>
+              <span class="text-[10px] text-slate-500">Free developer tier</span>
+            </div>
+          </a>
         </div>
 
         <div>
@@ -1609,11 +1627,11 @@
 
         <div id="modalExotelFields" class="space-y-3">
           <div>
-            <label class="block text-slate-700 font-bold mb-1">Exotel Account SID</label>
-            <input type="text" id="modalExotelSid" placeholder="e.g. your_company_sid" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <label class="block text-slate-700 font-bold mb-1">Account SID / API Key</label>
+            <input type="text" id="modalExotelSid" placeholder="e.g. bodhischoolofyoga or ACxxxxxxxx..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
           </div>
           <div>
-            <label class="block text-slate-700 font-bold mb-1">API Token / Key</label>
+            <label class="block text-slate-700 font-bold mb-1">API Token / Auth Secret</label>
             <input type="password" id="modalExotelToken" placeholder="e.g. 9f8a7b6c5d..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
           </div>
           <div>
@@ -1628,14 +1646,200 @@
           <input type="text" id="modalWebhookUrl" placeholder="https://your-n8n.instance/webhook/ivr-dispatch" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
           <p class="text-[10px] text-slate-400">YogaLeadAI sends a POST request with lead phone, language, and key responses.</p>
         </div>
+
+        <!-- Connection Test Feedback Container -->
+        <div id="modalGatewayTestResult" class="hidden p-2.5 rounded-lg text-[11px] font-medium"></div>
       </div>
 
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <button onclick="toggleTelephonyConfigModal()" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-xs">
-          Cancel
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleTelephonyConfigModal()" class="px-3 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-xs">
+            Cancel
+          </button>
+          <button onclick="testTelephonyGatewayConnection()" id="btnTestGatewayConnection" class="px-3 py-2 border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-all">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Test Connection
+          </button>
+        </div>
         <button onclick="saveTelephonyModalConfig()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm">
           <i data-lucide="check" class="w-3.5 h-3.5"></i> Save & Apply Gateway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missing Gateway Action Selection Modal (Single Outbound Call) -->
+  <div id="missingGatewayModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-amber-50/80">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </span>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Cloud Gateway Required for Cellular Dialing</h3>
+            <p class="text-[11px] text-amber-800">Choose how you want to connect to this Indian mobile number:</p>
+          </div>
+        </div>
+        <button onclick="closeMissingGatewayModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <!-- Target Lead Info -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-mono text-slate-400 block">Target Lead Number</span>
+            <span id="missingGatewayTargetLead" class="font-bold text-slate-900 text-xs">+91 98201 44552</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">Bodhi School of Yoga</span>
+        </div>
+
+        <p class="text-slate-600 leading-relaxed text-[11px]">
+          Web browsers on computers cannot broadcast cellular radio waves directly without an Indian telecom trunk (TRAI/DoT regulation). You have <strong>3 instant options</strong>:
+        </p>
+
+        <!-- 3 Action Options -->
+        <div class="space-y-3">
+          <!-- Option 1: Direct SIM / Phone Link (No Setup, 100% Free) -->
+          <div class="p-3.5 rounded-xl border-2 border-emerald-500/40 bg-emerald-50/50 hover:bg-emerald-50 transition-all flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-emerald-950 text-xs">Option 1: Direct Dial via Phone / SIM</h4>
+                <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded-full font-bold">Instant • Zero Setup</span>
+              </div>
+              <p class="text-[11px] text-emerald-800 mt-0.5 mb-2">
+                Triggers your smartphone SIM, Windows Phone Link, or softphone to ring this number directly. 100% free, no API keys needed!
+              </p>
+              <button onclick="executeMissingGatewayDirectDial()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all">
+                <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+                <span>📱 Call Now From My Phone / SIM</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Option 2: Connect Exotel / Twilio Gateway -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="key" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-xs">Option 2: Enter Exotel or Twilio API Keys</h4>
+                <span class="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full font-bold">Cloud Carrier</span>
+              </div>
+              <p class="text-[11px] text-slate-600 mt-0.5 mb-2">
+                Connect your Exotel Account SID & Token to place automated outbound IVR calls from the cloud with verified Caller ID.
+              </p>
+              <button onclick="executeMissingGatewayOpenConfig()" class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all">
+                <i data-lucide="settings-2" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>🔑 Open Gateway Settings (Enter Keys)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Option 3: In-Browser Indian Female Audio Simulator -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-slate-700 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="headphones" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-xs">Option 3: In-Browser Audio Test</h4>
+                <span class="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full font-bold">Speaker Demo</span>
+              </div>
+              <p class="text-[11px] text-slate-600 mt-0.5 mb-2">
+                Preview the Bodhi School of Yoga Indian Female voice greeting through your PC speakers and test dialpad DTMF key options.
+              </p>
+              <button onclick="executeMissingGatewaySimulator()" class="w-full bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-800 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-300 transition-all">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5 text-slate-600"></i>
+                <span>🎧 Test In Voice Simulator</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+        <a href="guide.html#step-ivr" target="_blank" class="text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i> Read IVR Setup Guide
+        </a>
+        <button onclick="closeMissingGatewayModal()" class="px-4 py-1.5 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-xs">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missing Gateway Action Modal (Bulk Outbound Campaign) -->
+  <div id="missingBulkGatewayModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-amber-50/80">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+            <i data-lucide="phone-forwarded" class="w-5 h-5"></i>
+          </span>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Bulk IVR: Carrier Gateway Credentials Required</h3>
+            <p class="text-[11px] text-amber-800">To dial real mobile handsets over telecom networks in bulk:</p>
+          </div>
+        </div>
+        <button onclick="closeBulkGatewayPromptModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-950 text-[11px] leading-relaxed">
+          You are launching a bulk IVR broadcast to <strong id="missingBulkCountText">50 Indian numbers</strong>. To broadcast automated phone calls across Airtel, Jio, and Vi networks, an active <strong>Exotel India</strong> or <strong>Twilio Voice</strong> account SID and Token are required.
+        </div>
+
+        <div class="space-y-3">
+          <!-- Option A: Configure Carrier Gateway -->
+          <div class="p-3.5 rounded-xl border-2 border-rose-500/40 bg-rose-50/30 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="key" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-slate-900 text-xs">Option A: Connect Exotel / Twilio Gateway</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5 mb-2">
+                Enter your Account SID & Token to place live automated phone calls to all leads over cellular networks.
+              </p>
+              <button onclick="executeBulkOpenConfig()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all">
+                <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                <span>🔑 Open Gateway Settings (Enter Keys)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Option B: Run Bulk Simulation Demo -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="play" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-slate-900 text-xs">Option B: Run Bulk Simulation & CRM Demo</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5 mb-2">
+                Simulate the entire 50-call pipeline with ringtones, DTMF tones, and CRM auto-qualification without incurring carrier charges.
+              </p>
+              <button onclick="executeBulkRunSimulator()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all">
+                <i data-lucide="play-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>▶️ Run Bulk Simulation & CRM Demo (₹0 Spend)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+        <a href="guide.html#step-ivr" target="_blank" class="text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i> Read Telephony Guide
+        </a>
+        <button onclick="closeBulkGatewayPromptModal()" class="px-4 py-1.5 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-xs">
+          Dismiss
         </button>
       </div>
     </div>

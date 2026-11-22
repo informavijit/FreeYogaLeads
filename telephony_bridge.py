@@ -135,6 +135,120 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": f"Invalid JSON payload: {e}"}).encode('utf-8'))
             return
 
+        # --------------------------------------------------------------------
+        # 1. GATEWAY CREDENTIAL VALIDATION ENDPOINT (/test-gateway)
+        # --------------------------------------------------------------------
+        if self.path == '/test-gateway':
+            provider = req.get('provider', 'exotel')
+            sid = req.get('sid', '').strip()
+            token = req.get('token', '').strip()
+
+            if not sid or not token:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "valid": False,
+                    "message": "Account SID and API Token/Key cannot be empty."
+                }).encode('utf-8'))
+                return
+
+            if provider == 'exotel':
+                url = f"https://api.exotel.com/v1/Accounts/{sid}.json"
+                auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
+                http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
+                try:
+                    with urllib.request.urlopen(http_req, timeout=8) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "valid": True,
+                            "carrier": "Exotel India",
+                            "message": f"✅ Exotel Account '{sid}' verified! Active and ready for live Indian telecom dialing."
+                        }).encode('utf-8'))
+                        return
+                except urllib.error.HTTPError as he:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "valid": False,
+                        "carrier": "Exotel India",
+                        "message": f"❌ Exotel Error {he.code}: Invalid Account SID or Token. Please verify in your Exotel dashboard."
+                    }).encode('utf-8'))
+                    return
+                except Exception as ex:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "valid": False,
+                        "carrier": "Exotel India",
+                        "message": f"⚠️ Could not reach Exotel: {ex}"
+                    }).encode('utf-8'))
+                    return
+
+            elif provider == 'twilio':
+                url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}.json"
+                auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
+                http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
+                try:
+                    with urllib.request.urlopen(http_req, timeout=8) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "valid": True,
+                            "carrier": "Twilio Voice",
+                            "message": f"✅ Twilio Account '{sid}' verified! Active and ready for outbound IVR dispatch."
+                        }).encode('utf-8'))
+                        return
+                except urllib.error.HTTPError as he:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "valid": False,
+                        "carrier": "Twilio Voice",
+                        "message": f"❌ Twilio Error {he.code}: Invalid Account SID or Auth Token."
+                    }).encode('utf-8'))
+                    return
+                except Exception as ex:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "valid": False,
+                        "carrier": "Twilio Voice",
+                        "message": f"⚠️ Could not reach Twilio: {ex}"
+                    }).encode('utf-8'))
+                    return
+
+            else:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "valid": True,
+                    "carrier": provider,
+                    "message": "Custom Webhook configured."
+                }).encode('utf-8'))
+                return
+
+        # --------------------------------------------------------------------
+        # 2. OUTBOUND CALL DISPATCH ENDPOINT (/call)
+        # --------------------------------------------------------------------
         to_phone = req.get('to', '').strip()
         caller_id = req.get('callerId', '+918047198800')
         provider = req.get('provider', 'exotel')
@@ -213,8 +327,8 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
             target_e164 = f"+91{clean_to}"
 
-            # TwiML with Indian Voice
-            twiml = f'<Response><Say language="en-IN" voice="Polly.Aditi">Namaste from Bodhi School of Yoga. Please wait while we connect your counselor.</Say><Pause length="1"/></Response>'
+            # TwiML with Indian Voice for Bodhi School of Yoga
+            twiml = f'<Response><Say language="en-IN" voice="Polly.Aditi">Namaste from Bodhi School of Yoga. Welcome to Yoga Alliance accredited teacher training and online classes. One of our coordinators will connect with you shortly.</Say><Pause length="1"/></Response>'
             payload = urllib.parse.urlencode({
                 'To': target_e164,
                 'From': caller_id,
@@ -265,23 +379,23 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                 print(f"   ⚠️ Twilio Network Exception: {ex}")
 
         # --------------------------------------------------------------------
-        # C. ZERO-CREDENTIAL SIMULATION / GUIDANCE RESPONSE
+        # C. ZERO-CREDENTIAL GUIDANCE RESPONSE (CLEAR & EXPLICIT)
         # --------------------------------------------------------------------
         call_sid = f"SIM_{clean_to[-6:] if len(clean_to) >= 6 else 'TEST'}_{int(time.time())}"
-        print(f"   ℹ️ Telephony Simulator: No Exotel/Twilio API keys provided. Call SID: {call_sid}")
+        print(f"   ℹ️ Cloud Gateway credentials not found for +91 {clean_to}. Returning needs_credentials guidance.")
         
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.wfile.write(json.dumps({
-            "status": "simulation_mode",
+            "status": "needs_credentials",
             "hasCredentials": False,
-            "carrier": "Local Simulator (Zero Credentials)",
+            "carrier": "Gateway Credentials Required",
             "callSid": call_sid,
             "to": f"+91 {clean_to}",
             "callerId": caller_id,
-            "message": "To dial physical Indian phone numbers over cellular networks, enter your Exotel or Twilio account credentials in Gateway Settings, or click 'Direct Dial via Phone' to call directly from your device."
+            "message": "Cloud Gateway credentials (Account SID & Token) are required to physically ring mobile numbers in India (+91) over cellular networks. Or click Direct Dial (SIM) to call immediately from your device."
         }).encode('utf-8'))
 
     def log_message(self, format, *args):
