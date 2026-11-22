@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YogaLeadAI - Continuous Free Leads & Ad Spend Optimizer</title>
-  
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -32,34 +33,40 @@
       }
     }
   </script>
-  
+
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #f1f5f9;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
   <!-- TOP NAVBAR -->
@@ -68,13 +75,17 @@
       <div class="flex justify-between h-16 items-center">
         <!-- Logo -->
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <div
+            class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
             <i data-lucide="sparkles" class="w-6 h-6"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-extrabold text-xl tracking-tight text-slate-900">YogaLead<span class="text-brand-600">AI</span></span>
-              <span class="text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">Ad Cost Killer</span>
+              <span class="font-extrabold text-xl tracking-tight text-slate-900">YogaLead<span
+                  class="text-brand-600">AI</span></span>
+              <span
+                class="text-[10px] uppercase font-bold tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">Ad
+                Cost Killer</span>
             </div>
             <p class="text-xs text-slate-500">Autonomous Lead Generator for Yoga Training & Certifications</p>
           </div>
@@ -94,17 +105,20 @@
             </div>
           </div>
 
-          <a href="guide.html" target="_blank" class="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all shadow-xs">
+          <a href="guide.html" target="_blank"
+            class="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all shadow-xs">
             <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
             <span>User Guide</span>
           </a>
 
-          <a href="architecture.html" target="_blank" class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all shadow-xs">
+          <a href="architecture.html" target="_blank"
+            class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all shadow-xs">
             <i data-lucide="layers" class="w-3.5 h-3.5"></i>
             <span>Architecture</span>
           </a>
 
-          <button onclick="switchTab('settings')" class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all shadow-xs">
+          <button onclick="switchTab('settings')"
+            class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-all shadow-xs">
             <i data-lucide="settings" class="w-4 h-4"></i>
             <span>Settings & AI Key</span>
             <span id="apiKeyStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
@@ -114,30 +128,37 @@
 
       <!-- Navigation Tabs -->
       <nav class="flex gap-2 -mb-px overflow-x-auto custom-scrollbar border-t border-slate-100 py-1">
-        <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="nav-tab active flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-brand-600 text-brand-700 whitespace-nowrap">
+        <button onclick="switchTab('dashboard')" id="tab-btn-dashboard"
+          class="nav-tab active flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-brand-600 text-brand-700 whitespace-nowrap">
           <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
           Overview & Savings
         </button>
-        <button onclick="switchTab('directory')" id="tab-btn-directory" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+        <button onclick="switchTab('directory')" id="tab-btn-directory"
+          class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="map-pin" class="w-4 h-4"></i>
           Directory Finder (Gyms & Studios)
           <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono">G-Maps</span>
         </button>
-        <button onclick="switchTab('social')" id="tab-btn-social" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+        <button onclick="switchTab('social')" id="tab-btn-social"
+          class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="radio" class="w-4 h-4"></i>
           Social Intent Hunter
           <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-mono">Reddit & Forums</span>
         </button>
-        <button onclick="switchTab('outreach')" id="tab-btn-outreach" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+        <button onclick="switchTab('outreach')" id="tab-btn-outreach"
+          class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="message-square" class="w-4 h-4"></i>
           AI Outreach Studio
         </button>
-        <button onclick="switchTab('crm')" id="tab-btn-crm" class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+        <button onclick="switchTab('crm')" id="tab-btn-crm"
+          class="nav-tab flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="users" class="w-4 h-4"></i>
           Lead CRM Pipeline
-          <span id="crmCountBadge" class="ml-1 bg-brand-100 text-brand-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+          <span id="crmCountBadge"
+            class="ml-1 bg-brand-100 text-brand-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
         </button>
-        <button onclick="switchTab('settings')" id="tab-btn-settings" class="nav-tab flex md:hidden items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
+        <button onclick="switchTab('settings')" id="tab-btn-settings"
+          class="nav-tab flex md:hidden items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">
           <i data-lucide="settings" class="w-4 h-4"></i>
           Settings
         </button>
@@ -152,24 +173,31 @@
     <!-- 1. DASHBOARD & SAVINGS TAB                 -->
     <!-- ========================================== -->
     <div id="tab-content-dashboard" class="space-y-6">
-      
+
       <!-- Welcome & Alert Banner -->
-      <div class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+      <div
+        class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
         <div class="relative z-10 max-w-3xl space-y-2">
-          <div class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded-full border border-emerald-400/30">
+          <div
+            class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded-full border border-emerald-400/30">
             <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 100% Free Client-Side Operation (Zero Server Costs)
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Smarter Leads, Drastically Lower Ad Spends.</h1>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Smarter Leads, Drastically Lower Ad Spends.
+          </h1>
           <p class="text-emerald-100/90 text-sm sm:text-base leading-relaxed">
-            Your startup is spending <span class="font-bold text-amber-300">₹50,000/day (₹15 Lakhs/month)</span> on ads. 
-            This engine combines <strong>Google Maps B2B Scraping</strong> (targeting gyms, fitness centers, and corporate wellness) with 
-            <strong>Social Intent Listening</strong> (finding students & trainers actively asking for courses on Reddit/Forums) to capture organic leads for free.
+            Your startup is spending <span class="font-bold text-amber-300">₹50,000/day (₹15 Lakhs/month)</span> on ads.
+            This engine combines <strong>Google Maps B2B Scraping</strong> (targeting gyms, fitness centers, and
+            corporate wellness) with
+            <strong>Social Intent Listening</strong> (finding students & trainers actively asking for courses on
+            Reddit/Forums) to capture organic leads for free.
           </p>
           <div class="pt-3 flex flex-wrap gap-3">
-            <button onclick="switchTab('directory')" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all shadow-md flex items-center gap-2">
+            <button onclick="switchTab('directory')"
+              class="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all shadow-md flex items-center gap-2">
               <i data-lucide="search" class="w-4 h-4"></i> Find Gyms & Trainer Leads
             </button>
-            <button onclick="switchTab('social')" class="bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-4 py-2 rounded-lg border border-white/20 transition-all flex items-center gap-2">
+            <button onclick="switchTab('social')"
+              class="bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-4 py-2 rounded-lg border border-white/20 transition-all flex items-center gap-2">
               <i data-lucide="radio" class="w-4 h-4"></i> Scan Social Intent Posts
             </button>
           </div>
@@ -185,7 +213,8 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div class="flex justify-between items-start">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Leads in CRM</span>
-            <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="users" class="w-5 h-5"></i></span>
+            <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="users"
+                class="w-5 h-5"></i></span>
           </div>
           <div class="mt-4">
             <div class="text-3xl font-black text-slate-900" id="statTotalLeads">0</div>
@@ -209,7 +238,8 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div class="flex justify-between items-start">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimated Ad Value</span>
-            <span class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="indian-rupee" class="w-5 h-5"></i></span>
+            <span class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="indian-rupee"
+                class="w-5 h-5"></i></span>
           </div>
           <div class="mt-4">
             <div class="text-3xl font-black text-slate-900" id="statAdValue">₹0</div>
@@ -232,13 +262,15 @@
 
       <!-- Ad Cost Reduction Simulator -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4 mb-6">
+        <div
+          class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4 mb-6">
           <div>
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i data-lucide="calculator" class="w-5 h-5 text-brand-600"></i>
               Ad Spend Replacement & ROI Simulator
             </h2>
-            <p class="text-sm text-slate-500">Calculate how many daily ad rupees you can shave off as organic lead flow ramps up.</p>
+            <p class="text-sm text-slate-500">Calculate how many daily ad rupees you can shave off as organic lead flow
+              ramps up.</p>
           </div>
           <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">Live Projection</span>
         </div>
@@ -249,22 +281,27 @@
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Current Daily Ad Spend</label>
               <div class="relative">
                 <span class="absolute left-3 top-2.5 text-slate-400 font-bold">₹</span>
-                <input type="number" id="simDailySpend" value="50000" oninput="calculateSimulator()" class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
+                <input type="number" id="simDailySpend" value="50000" oninput="calculateSimulator()"
+                  class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Avg Cost Per Lead (CPL) on Ads</label>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Avg Cost Per Lead (CPL) on
+                Ads</label>
               <div class="relative">
                 <span class="absolute left-3 top-2.5 text-slate-400 font-bold">₹</span>
-                <input type="number" id="simCpl" value="250" oninput="calculateSimulator()" class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
+                <input type="number" id="simCpl" value="250" oninput="calculateSimulator()"
+                  class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
               </div>
               <p class="text-[11px] text-slate-400 mt-1">Typical Indian Yoga CPL: ₹150 - ₹350; Abroad: $5 - $15</p>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Organic Free Leads Targeted / Day</label>
-              <input type="number" id="simFreeLeads" value="40" oninput="calculateSimulator()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Organic Free Leads Targeted /
+                Day</label>
+              <input type="number" id="simFreeLeads" value="40" oninput="calculateSimulator()"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-brand-500">
               <p class="text-[11px] text-slate-400 mt-1">From Directory scraping + Social intent hunting</p>
             </div>
           </div>
@@ -297,7 +334,8 @@
 
             <div class="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-600 flex items-center gap-2">
               <i data-lucide="info" class="w-4 h-4 text-brand-600 flex-shrink-0"></i>
-              <span><strong>Strategy:</strong> Even replacing 40 leads/day organically recovers ₹3,00,000 per month from the ad bill immediately.</span>
+              <span><strong>Strategy:</strong> Even replacing 40 leads/day organically recovers ₹3,00,000 per month from
+                the ad bill immediately.</span>
             </div>
           </div>
         </div>
@@ -308,16 +346,21 @@
         <!-- Guide 1 -->
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div class="flex items-center gap-3 mb-3">
-            <span class="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-sm">1</span>
+            <span
+              class="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-sm">1</span>
             <div>
               <h3 class="font-bold text-slate-900">Google Maps Scraping (B2B & Certification)</h3>
-              <p class="text-xs text-slate-500">Based on <code class="text-emerald-700">gosom/Google-Maps-Scraper</code></p>
+              <p class="text-xs text-slate-500">Based on <code class="text-emerald-700">gosom/Google-Maps-Scraper</code>
+              </p>
             </div>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            Scrapes Gyms, Crossfits, Dance Schools, and Wellness Centers. Why? Their trainers are hungry for Yoga Alliance certifications (YTTC) to boost their income from ₹25k to ₹80k+. Target corporate HRs for team wellness retreats.
+            Scrapes Gyms, Crossfits, Dance Schools, and Wellness Centers. Why? Their trainers are hungry for Yoga
+            Alliance certifications (YTTC) to boost their income from ₹25k to ₹80k+. Target corporate HRs for team
+            wellness retreats.
           </p>
-          <button onclick="switchTab('directory')" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5">
+          <button onclick="switchTab('directory')"
+            class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5">
             Launch Directory Finder <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -325,16 +368,21 @@
         <!-- Guide 2 -->
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div class="flex items-center gap-3 mb-3">
-            <span class="h-8 w-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-sm">2</span>
+            <span
+              class="h-8 w-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-sm">2</span>
             <div>
               <h3 class="font-bold text-slate-900">Social Intent Hunter (B2C & Students)</h3>
-              <p class="text-xs text-slate-500">Based on <code class="text-amber-700">Kappaemme-git/codex-first-customer</code></p>
+              <p class="text-xs text-slate-500">Based on <code
+                  class="text-amber-700">Kappaemme-git/codex-first-customer</code></p>
             </div>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            Scans Reddit, Twitter, and wellness communities for real people saying: <em>"Looking for online yoga teacher training"</em> or <em>"Need yoga trainer for back pain"</em>. Generates personalized, high-empathy responses without sounding spammy.
+            Scans Reddit, Twitter, and wellness communities for real people saying: <em>"Looking for online yoga teacher
+              training"</em> or <em>"Need yoga trainer for back pain"</em>. Generates personalized, high-empathy
+            responses without sounding spammy.
           </p>
-          <button onclick="switchTab('social')" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5">
+          <button onclick="switchTab('social')"
+            class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5">
             Launch Intent Hunter <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -345,7 +393,7 @@
     <!-- 2. DIRECTORY & MAPS SCRAPER TAB            -->
     <!-- ========================================== -->
     <div id="tab-content-directory" class="hidden space-y-6">
-      
+
       <!-- Search Control Card -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -354,14 +402,17 @@
               <i data-lucide="map-pin" class="w-5 h-5 text-emerald-600"></i>
               Directory & Google Maps Lead Explorer
             </h2>
-            <p class="text-xs text-slate-500">Extracts gyms, fitness centers, yoga studios, and corporate spaces worldwide with direct phone numbers & websites.</p>
+            <p class="text-xs text-slate-500">Extracts gyms, fitness centers, yoga studios, and corporate spaces
+              worldwide with direct phone numbers & websites.</p>
           </div>
-          
+
           <div class="flex gap-2">
-            <button onclick="document.getElementById('fileImportInput').click()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg border border-slate-300 flex items-center gap-1.5">
+            <button onclick="document.getElementById('fileImportInput').click()"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg border border-slate-300 flex items-center gap-1.5">
               <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import CSV/JSON from Gosom Scraper
             </button>
-            <input type="file" id="fileImportInput" accept=".csv,.json" class="hidden" onchange="handleFileImport(event)">
+            <input type="file" id="fileImportInput" accept=".csv,.json" class="hidden"
+              onchange="handleFileImport(event)">
           </div>
         </div>
 
@@ -369,7 +420,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Category</label>
-            <select id="dirCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500">
+            <select id="dirCategory"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500">
               <option value="fitness_centre">Gyms & Fitness Centres (Certification Upsell)</option>
               <option value="yoga">Yoga Studios & Instructors</option>
               <option value="wellness">Wellness, Spa & Ayurveda Centers</option>
@@ -379,16 +431,20 @@
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">City / Region</label>
-            <input type="text" id="dirCity" value="Mumbai" placeholder="e.g. Mumbai, Delhi, Bengaluru, Dubai, London" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
+            <input type="text" id="dirCity" value="Mumbai" placeholder="e.g. Mumbai, Delhi, Bengaluru, Dubai, London"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Country</label>
-            <input type="text" id="dirCountry" value="India" placeholder="e.g. India, United States, UAE, United Kingdom" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
+            <input type="text" id="dirCountry" value="India"
+              placeholder="e.g. India, United States, UAE, United Kingdom"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
           </div>
 
           <div class="flex items-end">
-            <button id="btnSearchDirectory" onclick="searchDirectory()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <button id="btnSearchDirectory" onclick="searchDirectory()"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
               <i data-lucide="search" class="w-4 h-4"></i>
               <span>Find Free Leads</span>
             </button>
@@ -398,11 +454,16 @@
         <!-- Quick Presets -->
         <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
           <span class="font-semibold text-slate-700">Quick Targets:</span>
-          <button onclick="setDirectoryPreset('fitness_centre', 'Delhi', 'India')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Delhi Gyms</button>
-          <button onclick="setDirectoryPreset('fitness_centre', 'Bengaluru', 'India')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Bengaluru Fitness</button>
-          <button onclick="setDirectoryPreset('coworking', 'Gurugram', 'India')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Gurugram Tech Hubs</button>
-          <button onclick="setDirectoryPreset('fitness_centre', 'Dubai', 'UAE')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Dubai Gyms (High Ticket)</button>
-          <button onclick="setDirectoryPreset('yoga', 'London', 'United Kingdom')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">London Yoga Studios</button>
+          <button onclick="setDirectoryPreset('fitness_centre', 'Delhi', 'India')"
+            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Delhi Gyms</button>
+          <button onclick="setDirectoryPreset('fitness_centre', 'Bengaluru', 'India')"
+            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Bengaluru Fitness</button>
+          <button onclick="setDirectoryPreset('coworking', 'Gurugram', 'India')"
+            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Gurugram Tech Hubs</button>
+          <button onclick="setDirectoryPreset('fitness_centre', 'Dubai', 'UAE')"
+            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">Dubai Gyms (High Ticket)</button>
+          <button onclick="setDirectoryPreset('yoga', 'London', 'United Kingdom')"
+            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md">London Yoga Studios</button>
         </div>
       </div>
 
@@ -411,19 +472,24 @@
         <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div class="flex items-center gap-2">
             <h3 class="font-bold text-slate-800 text-sm">Extracted Business Leads</h3>
-            <span id="directoryResultsCount" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0 results</span>
+            <span id="directoryResultsCount"
+              class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0 results</span>
           </div>
           <div class="flex gap-2">
-            <button onclick="addAllDirectoryToCrm()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-md flex items-center gap-1 transition-all">
+            <button onclick="addAllDirectoryToCrm()"
+              class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-md flex items-center gap-1 transition-all">
               <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Save All to CRM
             </button>
           </div>
         </div>
 
         <div id="directoryLoading" class="hidden p-12 text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-3"></div>
+          <div
+            class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-3">
+          </div>
           <p class="text-sm font-semibold text-slate-700">Querying live global directory database...</p>
-          <p class="text-xs text-slate-400 mt-1">Extracting verified business names, addresses, phones, and websites.</p>
+          <p class="text-xs text-slate-400 mt-1">Extracting verified business names, addresses, phones, and websites.
+          </p>
         </div>
 
         <!-- Table view -->
@@ -451,7 +517,7 @@
     <!-- 3. SOCIAL INTENT HUNTER TAB                -->
     <!-- ========================================== -->
     <div id="tab-content-social" class="hidden space-y-6">
-      
+
       <!-- Intent Search Control -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -460,7 +526,8 @@
               <i data-lucide="radio" class="w-5 h-5 text-amber-500"></i>
               Social Intent & Community Customer Finder
             </h2>
-            <p class="text-xs text-slate-500">Detects people actively asking for Yoga Teacher Training, Certification costs, or Personal online yoga classes.</p>
+            <p class="text-xs text-slate-500">Detects people actively asking for Yoga Teacher Training, Certification
+              costs, or Personal online yoga classes.</p>
           </div>
           <span class="text-[11px] font-mono bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-md">
             Signal Listening: Reddit & Discussions
@@ -470,8 +537,10 @@
         <div class="space-y-3">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preset Intent Topic (Dropdown)</label>
-              <select id="socialTopic" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preset Intent Topic
+                (Dropdown)</label>
+              <select id="socialTopic"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
                 <option value="yoga teacher training">Yoga Teacher Training (YTTC / 200hr / 300hr)</option>
                 <option value="yoga certification online">Yoga Certification Cost & Legitimacy</option>
                 <option value="online yoga classes for back pain">Online Yoga Trainer (Back Pain / Therapy)</option>
@@ -482,7 +551,8 @@
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Subreddit / Source</label>
-              <select id="socialSubreddit" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
+              <select id="socialSubreddit"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
                 <option value="all">All Relevant (r/yoga, r/flexibility, r/Fitness)</option>
                 <option value="yoga">r/yoga</option>
                 <option value="flexibility">r/flexibility</option>
@@ -492,7 +562,8 @@
             </div>
 
             <div class="flex items-end">
-              <button id="btnSearchSocial" onclick="searchSocialIntent()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+              <button id="btnSearchSocial" onclick="searchSocialIntent()"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
                 <i data-lucide="radio" class="w-4 h-4"></i>
                 <span>Scan Active Signals</span>
               </button>
@@ -509,8 +580,12 @@
               <span class="text-[10px] text-amber-700">Type any custom keyword without changing code</span>
             </div>
             <div class="flex gap-2">
-              <input type="text" id="socialCustomQuery" placeholder="e.g. looking for 200 hour online yoga teacher training USA, private yoga coach back pain, yoga classes seniors..." class="w-full px-3 py-2 border border-amber-300 rounded-md text-xs bg-white focus:ring-2 focus:ring-amber-500 text-slate-800 font-medium">
-              <button onclick="clearCustomSearch()" type="button" class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-300 rounded-md font-medium" title="Clear custom query">Clear</button>
+              <input type="text" id="socialCustomQuery"
+                placeholder="e.g. looking for 200 hour online yoga teacher training USA, private yoga coach back pain, yoga classes seniors..."
+                class="w-full px-3 py-2 border border-amber-300 rounded-md text-xs bg-white focus:ring-2 focus:ring-amber-500 text-slate-800 font-medium">
+              <button onclick="clearCustomSearch()" type="button"
+                class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-300 rounded-md font-medium"
+                title="Clear custom query">Clear</button>
             </div>
           </div>
         </div>
@@ -518,13 +593,19 @@
         <!-- Direct Social Search Queries for Manual Deep Dive -->
         <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
           <span class="text-slate-500 font-medium">Quick Live Search:</span>
-          <a href="https://www.google.com/search?q=site:reddit.com/r/yoga+%22teacher+training%22+recommendation" target="_blank" class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
+          <a href="https://www.google.com/search?q=site:reddit.com/r/yoga+%22teacher+training%22+recommendation"
+            target="_blank"
+            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
             Reddit YTTC Recs <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
-          <a href="https://www.google.com/search?q=site:reddit.com+%22online+yoga+certification%22+worth+it" target="_blank" class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
+          <a href="https://www.google.com/search?q=site:reddit.com+%22online+yoga+certification%22+worth+it"
+            target="_blank"
+            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
             Reddit Online Certification <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
-          <a href="https://twitter.com/search?q=%22looking%20for%20a%20yoga%20trainer%22%20OR%20%22yoga%20teacher%20training%22&f=live" target="_blank" class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
+          <a href="https://twitter.com/search?q=%22looking%20for%20a%20yoga%20trainer%22%20OR%20%22yoga%20teacher%20training%22&f=live"
+            target="_blank"
+            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
             Twitter Live Requests <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
         </div>
@@ -537,7 +618,8 @@
             <i data-lucide="rss" class="w-4 h-4 text-amber-500"></i>
             Live Intent Feed & Buying Signals
           </h3>
-          <span id="socialSignalCount" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">0 signals</span>
+          <span id="socialSignalCount" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">0
+            signals</span>
         </div>
 
         <div id="socialSignalsList" class="space-y-3">
@@ -550,7 +632,7 @@
     <!-- 4. AI OUTREACH STUDIO TAB                  -->
     <!-- ========================================== -->
     <div id="tab-content-outreach" class="hidden space-y-6">
-      
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Input & Options Column -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
@@ -559,17 +641,20 @@
               <i data-lucide="sparkles" class="w-5 h-5 text-brand-600"></i>
               AI Pitch Architect
             </h2>
-            <p class="text-xs text-slate-500">Creates tailored, high-converting WhatsApp, Email, and Social messages for each lead type.</p>
+            <p class="text-xs text-slate-500">Creates tailored, high-converting WhatsApp, Email, and Social messages for
+              each lead type.</p>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Lead / Prospect</label>
-            <input type="text" id="outreachLeadName" placeholder="e.g. Golds Gym Bandra / Sarah (Reddit)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500">
+            <input type="text" id="outreachLeadName" placeholder="e.g. Golds Gym Bandra / Sarah (Reddit)"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500">
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Core Offering / Angle</label>
-            <select id="outreachAngle" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500">
+            <select id="outreachAngle"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500">
               <option value="certification">Yoga Teacher Certification (200hr / 300hr YTTC) - High Ticket</option>
               <option value="b2c_training">Personal / Group Online Yoga Training (Weight Loss, Therapy)</option>
               <option value="corporate">Corporate Wellness Workshop (For Tech/Offices)</option>
@@ -578,8 +663,11 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Prospect Specific Context / Pain Point</label>
-            <textarea id="outreachContext" rows="3" placeholder="e.g. Gym with 8 fitness trainers who could be certified in Yoga to charge clients 2x higher, or Reddit user with chronic sciatica seeking morning live session" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"></textarea>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Prospect Specific Context / Pain
+              Point</label>
+            <textarea id="outreachContext" rows="3"
+              placeholder="e.g. Gym with 8 fitness trainers who could be certified in Yoga to charge clients 2x higher, or Reddit user with chronic sciatica seeking morning live session"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"></textarea>
           </div>
 
           <div>
@@ -591,7 +679,8 @@
             </select>
           </div>
 
-          <button onclick="generateAIPitch()" id="btnGeneratePitch" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+          <button onclick="generateAIPitch()" id="btnGeneratePitch"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
             <span>Generate 3-Channel Pitches</span>
           </button>
@@ -599,17 +688,20 @@
 
         <!-- Generated Output Column -->
         <div class="lg:col-span-2 space-y-4">
-          
+
           <!-- Tabbed Channels -->
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div class="border-b border-slate-200 bg-slate-50 p-2 flex gap-2">
-              <button onclick="switchPitchChannel('whatsapp')" id="pitch-channel-whatsapp" class="pitch-tab active flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-xs">
+              <button onclick="switchPitchChannel('whatsapp')" id="pitch-channel-whatsapp"
+                class="pitch-tab active flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-xs">
                 <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp Pitch
               </button>
-              <button onclick="switchPitchChannel('email')" id="pitch-channel-email" class="pitch-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200">
+              <button onclick="switchPitchChannel('email')" id="pitch-channel-email"
+                class="pitch-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200">
                 <i data-lucide="mail" class="w-3.5 h-3.5"></i> Cold Email (B2B/Foreign)
               </button>
-              <button onclick="switchPitchChannel('social')" id="pitch-channel-social" class="pitch-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200">
+              <button onclick="switchPitchChannel('social')" id="pitch-channel-social"
+                class="pitch-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200">
                 <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Social / Reddit DM
               </button>
             </div>
@@ -619,8 +711,10 @@
               <div id="emailSubjectContainer" class="hidden">
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subject Line</label>
                 <div class="flex gap-2">
-                  <input type="text" id="pitchEmailSubject" readonly class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
-                  <button onclick="copyToClipboard('pitchEmailSubject')" class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100" title="Copy Subject">
+                  <input type="text" id="pitchEmailSubject" readonly
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                  <button onclick="copyToClipboard('pitchEmailSubject')"
+                    class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100" title="Copy Subject">
                     <i data-lucide="copy" class="w-4 h-4 text-slate-600"></i>
                   </button>
                 </div>
@@ -630,24 +724,29 @@
               <div>
                 <div class="flex justify-between items-center mb-1">
                   <label class="block text-xs font-bold text-slate-700 uppercase">Personalized Message</label>
-                  <button onclick="copyToClipboard('pitchBody')" class="text-xs text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1">
+                  <button onclick="copyToClipboard('pitchBody')"
+                    class="text-xs text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1">
                     <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Message
                   </button>
                 </div>
-                <textarea id="pitchBody" rows="10" class="w-full p-3 border border-slate-300 rounded-lg text-sm font-mono leading-relaxed bg-slate-50/50 focus:bg-white"></textarea>
+                <textarea id="pitchBody" rows="10"
+                  class="w-full p-3 border border-slate-300 rounded-lg text-sm font-mono leading-relaxed bg-slate-50/50 focus:bg-white"></textarea>
               </div>
 
               <!-- Action Bar -->
               <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
                 <div class="flex items-center gap-2">
-                  <input type="text" id="targetPhoneNumber" placeholder="Phone with country code (e.g. 919876543210)" class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg w-56">
-                  <button onclick="launchWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
+                  <input type="text" id="targetPhoneNumber" placeholder="Phone with country code (e.g. 919876543210)"
+                    class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg w-56">
+                  <button onclick="launchWhatsApp()"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i> 1-Click WhatsApp
                   </button>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <button onclick="saveOutreachToLead()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
+                  <button onclick="saveOutreachToLead()"
+                    class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
                     <i data-lucide="check" class="w-3.5 h-3.5"></i> Mark Lead Contacted
                   </button>
                 </div>
@@ -662,7 +761,7 @@
     <!-- 5. LEAD CRM PIPELINE TAB                   -->
     <!-- ========================================== -->
     <div id="tab-content-crm" class="hidden space-y-6">
-      
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
@@ -670,14 +769,17 @@
               <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
               Lead Pipeline & Follow-up Tracker
             </h2>
-            <p class="text-xs text-slate-500">Never lose a lead. Track from initial discovery to trial booking and full enrollment.</p>
+            <p class="text-xs text-slate-500">Never lose a lead. Track from initial discovery to trial booking and full
+              enrollment.</p>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button onclick="exportLeadsCsv()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-3 py-2 rounded-lg border border-slate-300 flex items-center gap-1.5 transition-all">
+            <button onclick="exportLeadsCsv()"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-3 py-2 rounded-lg border border-slate-300 flex items-center gap-1.5 transition-all">
               <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
             </button>
-            <button onclick="clearAllLeads()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-3 py-2 rounded-lg border border-rose-200 flex items-center gap-1.5 transition-all">
+            <button onclick="clearAllLeads()"
+              class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-3 py-2 rounded-lg border border-rose-200 flex items-center gap-1.5 transition-all">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All
             </button>
           </div>
@@ -685,11 +787,21 @@
 
         <!-- Filter bar -->
         <div class="flex flex-wrap gap-2 mb-4">
-          <button onclick="filterCrmTable('all')" class="crm-filter-btn active text-xs font-bold px-3 py-1 rounded-md bg-slate-800 text-white">All Leads (<span id="countAll">0</span>)</button>
-          <button onclick="filterCrmTable('New')" class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">New (<span id="countNew">0</span>)</button>
-          <button onclick="filterCrmTable('Contacted')" class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Contacted (<span id="countContacted">0</span>)</button>
-          <button onclick="filterCrmTable('Trial Booked')" class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Trial Booked (<span id="countTrial">0</span>)</button>
-          <button onclick="filterCrmTable('Enrolled')" class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Enrolled / Won (<span id="countEnrolled">0</span>)</button>
+          <button onclick="filterCrmTable('all')"
+            class="crm-filter-btn active text-xs font-bold px-3 py-1 rounded-md bg-slate-800 text-white">All Leads
+            (<span id="countAll">0</span>)</button>
+          <button onclick="filterCrmTable('New')"
+            class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">New
+            (<span id="countNew">0</span>)</button>
+          <button onclick="filterCrmTable('Contacted')"
+            class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Contacted
+            (<span id="countContacted">0</span>)</button>
+          <button onclick="filterCrmTable('Trial Booked')"
+            class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Trial
+            Booked (<span id="countTrial">0</span>)</button>
+          <button onclick="filterCrmTable('Enrolled')"
+            class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Enrolled
+            / Won (<span id="countEnrolled">0</span>)</button>
         </div>
 
         <!-- CRM Table -->
@@ -718,14 +830,15 @@
     <!-- 6. SETTINGS & AI CONFIG TAB                -->
     <!-- ========================================== -->
     <div id="tab-content-settings" class="hidden space-y-6">
-      
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 max-w-3xl mx-auto space-y-6">
         <div>
           <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
             <i data-lucide="settings" class="w-5 h-5 text-brand-600"></i>
             Configuration & Free AI Setup
           </h2>
-          <p class="text-xs text-slate-500">Configure your business details and free Google Gemini API key to activate autonomous AI pitching.</p>
+          <p class="text-xs text-slate-500">Configure your business details and free Google Gemini API key to activate
+            autonomous AI pitching.</p>
         </div>
 
         <!-- Google Gemini Free API Key -->
@@ -735,51 +848,62 @@
             <div>
               <h3 class="font-bold text-slate-900 text-sm">Google Gemini Free API Key (Optional)</h3>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Google provides a 100% free API tier with 15 requests/minute. No credit card required. 
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand-700 underline font-semibold">Get a free key here in 30 seconds</a>.
+                Google provides a 100% free API tier with 15 requests/minute. No credit card required.
+                <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                  class="text-brand-700 underline font-semibold">Get a free key here in 30 seconds</a>.
               </p>
             </div>
           </div>
           <div>
-            <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-mono">
-            <p class="text-[11px] text-slate-500 mt-1">Saved securely only in your browser's local storage. Never sent to any third-party server.</p>
+            <input type="password" id="geminiApiKey" placeholder="AIzaSy..."
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-mono">
+            <p class="text-[11px] text-slate-500 mt-1">Saved securely only in your browser's local storage. Never sent
+              to any third-party server.</p>
           </div>
         </div>
 
         <!-- Business Profile Information -->
         <div class="space-y-4">
-          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Your Yoga Startup Profile</h3>
-          
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Your Yoga
+            Startup Profile</h3>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Startup / Brand Name</label>
-              <input type="text" id="cfgBrandName" value="PranaVeda Yoga Academy" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              <input type="text" id="cfgBrandName" value="PranaVeda Yoga Academy"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Founder / Head Instructor</label>
-              <input type="text" id="cfgFounderName" value="Yogi Anand & Team" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              <input type="text" id="cfgFounderName" value="Yogi Anand & Team"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your WhatsApp Number (for incoming leads)</label>
-              <input type="text" id="cfgWhatsApp" value="+91 98765 43210" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your WhatsApp Number (for incoming
+                leads)</label>
+              <input type="text" id="cfgWhatsApp" value="+91 98765 43210"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Website URL</label>
-              <input type="text" id="cfgWebsite" value="https://pranavdayoga.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              <input type="text" id="cfgWebsite" value="https://pranavdayoga.com"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
             </div>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Key USPs & Credentials</label>
-            <textarea id="cfgUsps" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">Yoga Alliance USA Certified (RYS 200/300/500), Traditional Rishikesh lineage, 100% live interactive Zoom batches, 1-on-1 personalized posture correction, and guaranteed trainer internship placement.</textarea>
+            <textarea id="cfgUsps" rows="3"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">Yoga Alliance USA Certified (RYS 200/300/500), Traditional Rishikesh lineage, 100% live interactive Zoom batches, 1-on-1 personalized posture correction, and guaranteed trainer internship placement.</textarea>
           </div>
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end">
-          <button onclick="saveSettings()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2">
+          <button onclick="saveSettings()"
+            class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2">
             <i data-lucide="save" class="w-4 h-4"></i> Save Settings
           </button>
         </div>
@@ -795,9 +919,11 @@
       <div class="flex items-center gap-4">
         <span>Runs 100% free on GitHub Pages</span>
         <span>•</span>
-        <a href="https://github.com/gosom/Google-Maps-Scraper" target="_blank" class="hover:text-slate-800">Gosom Scraper</a>
+        <a href="https://github.com/gosom/Google-Maps-Scraper" target="_blank" class="hover:text-slate-800">Gosom
+          Scraper</a>
         <span>•</span>
-        <a href="https://github.com/Kappaemme-git/codex-first-customer-finder-skill" target="_blank" class="hover:text-slate-800">Customer Finder Skill</a>
+        <a href="https://github.com/Kappaemme-git/codex-first-customer-finder-skill" target="_blank"
+          class="hover:text-slate-800">Customer Finder Skill</a>
       </div>
     </div>
   </footer>
@@ -807,7 +933,8 @@
   <!-- ========================================== -->
   <div id="aiChatWrapper" class="fixed bottom-6 right-6 z-50">
     <!-- Chat Trigger Button (Floating Pill) -->
-    <button onclick="toggleChatAssistant()" id="chatLauncherBtn" class="flex items-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-3 rounded-full shadow-2xl shadow-emerald-700/40 transition-all transform hover:scale-105 font-bold text-xs border border-emerald-400/30">
+    <button onclick="toggleChatAssistant()" id="chatLauncherBtn"
+      class="flex items-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-3 rounded-full shadow-2xl shadow-emerald-700/40 transition-all transform hover:scale-105 font-bold text-xs border border-emerald-400/30">
       <span class="relative flex h-2.5 w-2.5">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
@@ -817,12 +944,14 @@
     </button>
 
     <!-- Chat Box Drawer (Initially Hidden) -->
-    <div id="chatDrawer" class="hidden flex-col w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all duration-300">
-      
+    <div id="chatDrawer"
+      class="hidden flex-col w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all duration-300">
+
       <!-- Drawer Header -->
       <div class="bg-gradient-to-r from-emerald-700 to-slate-900 text-white p-3.5 flex justify-between items-center">
         <div class="flex items-center gap-2.5">
-          <div class="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+          <div
+            class="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
           </div>
           <div>
@@ -834,34 +963,45 @@
           </div>
         </div>
         <div class="flex items-center gap-1">
-          <button onclick="clearChatHistory()" class="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white" title="Clear chat history">
+          <button onclick="clearChatHistory()" class="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white"
+            title="Clear chat history">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
           </button>
-          <button onclick="toggleChatAssistant()" class="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white" title="Close chat">
+          <button onclick="toggleChatAssistant()" class="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white"
+            title="Close chat">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
 
       <!-- Quick Suggestion Chips -->
-      <div class="bg-slate-50 border-b border-slate-100 p-2 overflow-x-auto whitespace-nowrap custom-scrollbar flex gap-1.5 text-[11px]">
-        <button onclick="quickAskAssistant('How do I use this site to replace the 50k ad spend?')" class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">💰 Replace ₹50k ad spend</button>
-        <button onclick="quickAskAssistant('Search: 200hr online yoga teacher training USA')" class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">🔍 Find YTTC leads</button>
-        <button onclick="quickAskAssistant('How do I contact gym trainers on WhatsApp?')" class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">📱 WhatsApp guide</button>
+      <div
+        class="bg-slate-50 border-b border-slate-100 p-2 overflow-x-auto whitespace-nowrap custom-scrollbar flex gap-1.5 text-[11px]">
+        <button onclick="quickAskAssistant('How do I use this site to replace the 50k ad spend?')"
+          class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">💰
+          Replace ₹50k ad spend</button>
+        <button onclick="quickAskAssistant('Search: 200hr online yoga teacher training USA')"
+          class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">🔍
+          Find YTTC leads</button>
+        <button onclick="quickAskAssistant('How do I contact gym trainers on WhatsApp?')"
+          class="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors">📱
+          WhatsApp guide</button>
       </div>
 
       <!-- Messages Stream -->
       <div id="chatMessages" class="flex-1 p-3.5 overflow-y-auto space-y-3 custom-scrollbar text-xs">
         <!-- Default Welcome Message -->
         <div class="flex gap-2 items-start">
-          <div class="h-6 w-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div
+            class="h-6 w-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
             <i data-lucide="bot" class="w-3.5 h-3.5"></i>
           </div>
           <div class="bg-slate-100 p-2.5 rounded-xl rounded-tl-none text-slate-700 leading-relaxed max-w-[85%]">
             Namaste! 🙏 I'm your AI Lead Assistant. You can ask me:
             <ul class="list-disc pl-4 mt-1.5 space-y-1 text-slate-600 text-[11px]">
               <li><strong>"How do I use the features?"</strong></li>
-              <li><strong>"Search: [any topic or city]"</strong> (I will execute the search and pull leads into the table!)</li>
+              <li><strong>"Search: [any topic or city]"</strong> (I will execute the search and pull leads into the
+                table!)</li>
               <li><strong>"How to get contact details of individuals?"</strong></li>
             </ul>
           </div>
@@ -871,8 +1011,10 @@
       <!-- Input Bar -->
       <div class="p-2.5 bg-white border-t border-slate-200">
         <form id="chatForm" onsubmit="handleChatSubmit(event)" class="flex gap-1.5">
-          <input type="text" id="chatInput" placeholder="Ask a question or type 'search: yoga certification'..." class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-all flex items-center justify-center shadow-xs">
+          <input type="text" id="chatInput" placeholder="Ask a question or type 'search: yoga certification'..."
+            class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <button type="submit"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-all flex items-center justify-center shadow-xs">
             <i data-lucide="send" class="w-4 h-4"></i>
           </button>
         </form>
@@ -882,7 +1024,8 @@
   </div>
 
   <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+  <div id="toast"
+    class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
     <i data-lucide="check-circle" class="w-4 h-4 text-brand-400"></i>
     <span id="toastMsg">Notification</span>
   </div>
@@ -893,4 +1036,5 @@
     lucide.createIcons();
   </script>
 </body>
+
 </html>
