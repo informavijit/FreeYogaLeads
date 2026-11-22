@@ -27,6 +27,52 @@ LANG_CODE_MAP = {
     'bn': 'bn'         # Bengali (Female)
 }
 
+# ----------------------------------------------------------------------------
+# EXOTEL CREDENTIAL SANITIZATION & MULTI-PERMUTATION AUTH ENGINE
+# ----------------------------------------------------------------------------
+def clean_exotel_sid(sid: str) -> str:
+    if not sid:
+        return ""
+    s = str(sid).strip().rstrip('/')
+    if 'my.exotel.com/' in s:
+        s = s.split('my.exotel.com/')[-1].split('/')[0]
+    elif 'exotel.in/' in s:
+        s = s.split('exotel.in/')[-1].split('/')[0]
+    elif 'exotel.com/' in s:
+        s = s.split('exotel.com/')[-1].split('/')[0]
+    s = s.replace('https://', '').replace('http://', '').strip('/')
+    if '.' in s and not s.startswith('AC'):
+        s = s.split('.')[0]
+    return s.strip()
+
+def build_exotel_auth_permutations(account_sid: str, api_key: str, api_token: str):
+    clean_sid = clean_exotel_sid(account_sid)
+    key = (api_key or '').strip()
+    tok = (api_token or '').strip()
+    
+    candidates = []
+    # 1. Best standard: (api_key, api_token) with URL path = clean_sid
+    if key and tok and clean_sid:
+        auth_bytes = base64.b64encode(f"{key}:{tok}".encode('utf-8')).decode('utf-8')
+        candidates.append((clean_sid, auth_bytes, f"Standard (Key: {key[:4]}*** : Token: {tok[:4]}***)"))
+
+    # 2. Inverted Key and Token: (api_token, api_key) with URL path = clean_sid
+    if tok and key and clean_sid and tok != key:
+        auth_bytes = base64.b64encode(f"{tok}:{key}".encode('utf-8')).decode('utf-8')
+        candidates.append((clean_sid, auth_bytes, f"Swapped (Token: {tok[:4]}*** : Key: {key[:4]}***)"))
+
+    # 3. If api_key was empty or same as account_sid: (clean_sid, api_token) with URL path = clean_sid
+    if clean_sid and tok and (not key or key == clean_sid):
+        auth_bytes = base64.b64encode(f"{clean_sid}:{tok}".encode('utf-8')).decode('utf-8')
+        candidates.append((clean_sid, auth_bytes, f"SID-as-User ({clean_sid} : Token: {tok[:4]}***)"))
+
+    # 4. Swapped SID & Key in URL: clean_sid as username, key as URL sid
+    if key and tok and clean_sid and key != clean_sid:
+        auth_bytes = base64.b64encode(f"{clean_sid}:{tok}".encode('utf-8')).decode('utf-8')
+        candidates.append((key, auth_bytes, f"Swapped URL SID ({clean_sid} auth, {key} in URL)"))
+
+    return candidates
+
 class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         # Handle CORS preflight
@@ -145,6 +191,11 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             api_token = (req.get('token') or '').strip()
             subdomain = (req.get('subdomain') or 'api.in.exotel.com').strip()
 
+            clean_sid = clean_exotel_sid(account_sid)
+            mask_key = f"{api_key[:4]}***" if len(api_key) >= 4 else api_key
+            mask_tok = f"{api_token[:4]}***" if len(api_token) >= 4 else api_token
+            print(f"\n[GATEWAY TEST] Provider: {provider} | SID: '{clean_sid}' (raw: '{account_sid}') | Key: '{mask_key}' (len {len(api_key)}) | Token: '{mask_tok}' (len {len(api_token)}) | Host: {subdomain}")
+
             if provider == 'exotel':
                 if not account_sid or not api_token:
                     self.send_response(200)
@@ -153,44 +204,50 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(json.dumps({
                         "valid": False,
-                        "message": "Exotel requires both Account SID and API Token (and API Key)."
+                        "carrier": "Exotel India",
+                        "message": "Exotel requires Account SID, API Key, and API Token."
                     }).encode('utf-8'))
                     return
 
-                # If user did not provide separate api_key, use account_sid or test both
-                effective_key = api_key or account_sid
-                auth_str = base64.b64encode(f"{effective_key}:{api_token}".encode('utf-8')).decode('utf-8')
-
-                # Test on requested subdomain, with automatic fallback
+                candidates = build_exotel_auth_permutations(account_sid, api_key, api_token)
                 hosts_to_test = [subdomain]
                 alt_host = 'api.exotel.com' if 'in.exotel' in subdomain else 'api.in.exotel.com'
-                hosts_to_test.append(alt_host)
+                if alt_host not in hosts_to_test:
+                    hosts_to_test.append(alt_host)
 
                 last_code = None
                 last_err = ""
+
                 for host in hosts_to_test:
-                    url = f"https://{host}/v1/Accounts/{account_sid}.json"
-                    http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
-                    try:
-                        with urllib.request.urlopen(http_req, timeout=8) as resp:
-                            data = json.loads(resp.read().decode('utf-8'))
-                            self.send_response(200)
-                            self.send_header('Content-Type', 'application/json')
-                            self.send_header('Access-Control-Allow-Origin', '*')
-                            self.end_headers()
-                            self.wfile.write(json.dumps({
-                                "valid": True,
-                                "carrier": f"Exotel India ({host})",
-                                "message": f"✅ Exotel Account '{account_sid}' verified on {host}! Ready for live telecom outbound calling."
-                            }).encode('utf-8'))
-                            return
-                    except urllib.error.HTTPError as he:
-                        last_code = he.code
-                        last_err = he.read().decode('utf-8')
-                        continue
-                    except Exception as ex:
-                        last_err = str(ex)
-                        continue
+                    for url_sid, auth_str, desc in candidates:
+                        test_paths = [
+                            f"/v1/Accounts/{url_sid}/Calls.json?PageSize=1",
+                            f"/v1/Accounts/{url_sid}/Balance.json",
+                            f"/v1/Accounts/{url_sid}.json"
+                        ]
+                        for path in test_paths:
+                            url = f"https://{host}{path}"
+                            http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
+                            try:
+                                with urllib.request.urlopen(http_req, timeout=8) as resp:
+                                    print(f"   ✅ [VERIFIED] Host: {host} | Path: {path} | Auth: {desc}")
+                                    self.send_response(200)
+                                    self.send_header('Content-Type', 'application/json')
+                                    self.send_header('Access-Control-Allow-Origin', '*')
+                                    self.end_headers()
+                                    self.wfile.write(json.dumps({
+                                        "valid": True,
+                                        "carrier": f"Exotel India ({host})",
+                                        "message": f"✅ Exotel Account '{url_sid}' verified on {host}!\nCredentials are valid and active for outbound IVR calling."
+                                    }).encode('utf-8'))
+                                    return
+                            except urllib.error.HTTPError as he:
+                                last_code = he.code
+                                last_err = he.read().decode('utf-8')
+                                print(f"   [Test Attempt Failed] Host: {host} | Path: {path} | Auth: {desc} | Code: {he.code}")
+                            except Exception as ex:
+                                last_err = str(ex)
+                                print(f"   [Test Exception] Host: {host} | {ex}")
 
                 # If failed, return actionable guidance
                 advice = f"Exotel Error ({last_code}): {last_err}"
@@ -198,10 +255,12 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                     p = json.loads(last_err)
                     if p.get('RestException', {}).get('Code') == 34010:
                         advice = (
-                            "❌ Exotel Error 34010 (Invalid Auth Key/Token):\n"
-                            "1. Account SID: Your account name (e.g. bodhischoolofyoga) from your Exotel dashboard URL.\n"
+                            "❌ Exotel Error 34010 (Invalid Auth Key/Token):\n\n"
+                            "Please check your credentials in the 3 separate fields:\n"
+                            "1. Account SID: Your Exotel dashboard handle (e.g. bodhischoolofyoga).\n"
                             "2. API Key: The 32-character key from Settings > API Settings.\n"
-                            "3. API Token: The API token from Settings > API Settings."
+                            "3. API Token: The API token from Settings > API Settings.\n"
+                            "4. Cluster: Try selecting 'India Cluster (api.in.exotel.com)'."
                         )
                 except Exception:
                     pass
@@ -307,6 +366,11 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
         # A. REAL EXOTEL INDIA OUTBOUND CALL DISPATCH
         # --------------------------------------------------------------------
         if provider == 'exotel' and account_sid and api_token:
+            clean_sid = clean_exotel_sid(account_sid)
+            mask_key = f"{api_key[:4]}***" if len(api_key) >= 4 else api_key
+            mask_tok = f"{api_token[:4]}***" if len(api_token) >= 4 else api_token
+            print(f"   [AUTH DISPATCH] SID: '{clean_sid}' (raw: '{account_sid}') | Key: '{mask_key}' (len {len(api_key)}) | Token: '{mask_tok}' (len {len(api_token)}) | DID: '{caller_id}' | Subdomain: '{subdomain}'")
+
             clean_agent = ''.join(c for c in agent_phone if c.isdigit())
             if clean_agent.startswith('91') and len(clean_agent) == 12:
                 clean_agent = clean_agent[2:]
@@ -317,18 +381,13 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             if len(clean_caller) == 10 and clean_caller.startswith(('80', '11', '22', '40', '44')):
                 clean_caller = '0' + clean_caller
 
-            effective_key = api_key or account_sid
-            auth_str = base64.b64encode(f"{effective_key}:{api_token}".encode('utf-8')).decode('utf-8')
+            candidates = build_exotel_auth_permutations(account_sid, api_key, api_token)
 
             # We will attempt primary subdomain (api.in.exotel.com), and auto-fallback to (api.exotel.com)
             hosts_to_try = [subdomain]
             alt_host = 'api.exotel.com' if 'in.exotel' in subdomain else 'api.in.exotel.com'
-            hosts_to_try.append(alt_host)
-
-            auth_variants = [auth_str]
-            if api_key and api_key != account_sid:
-                alt_auth = base64.b64encode(f"{account_sid}:{api_token}".encode('utf-8')).decode('utf-8')
-                auth_variants.append(alt_auth)
+            if alt_host not in hosts_to_try:
+                hosts_to_try.append(alt_host)
 
             from_num = f"0{clean_agent}" if (clean_agent and not clean_agent.startswith('0')) else (clean_agent or f"0{clean_to}")
             to_num = f"0{clean_to}" if not clean_to.startswith('0') else clean_to
@@ -337,8 +396,8 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             last_code = 401
 
             for host in hosts_to_try:
-                for a_str in auth_variants:
-                    exotel_url = f"https://{host}/v1/Accounts/{account_sid}/Calls/connect.json"
+                for url_sid, a_str, desc in candidates:
+                    exotel_url = f"https://{host}/v1/Accounts/{url_sid}/Calls/connect.json"
                     
                     payload_data = {
                         'From': from_num,
@@ -359,7 +418,7 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                             res_body = response.read().decode('utf-8')
                             res_json = json.loads(res_body)
                             call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
-                            print(f"   ✅ Real Exotel Call Dispatched ({host}): SID {call_sid}")
+                            print(f"   ✅ Real Exotel Call Dispatched ({host}) [{desc}]: SID {call_sid}")
                             
                             self.send_response(200)
                             self.send_header('Content-Type', 'application/json')
@@ -377,7 +436,7 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                     except urllib.error.HTTPError as he:
                         last_code = he.code
                         last_error = he.read().decode('utf-8')
-                        print(f"   [Exotel Attempt Failed] Host: {host} | Code: {he.code} | {last_error}")
+                        print(f"   [Exotel Attempt Failed] Host: {host} | Auth: {desc} | Code: {he.code} | {last_error}")
                         continue
                     except Exception as ex:
                         last_error = str(ex)

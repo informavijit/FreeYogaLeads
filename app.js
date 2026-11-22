@@ -1889,6 +1889,106 @@ function initTelephonyConfig() {
   syncTelephonyConfigUI();
 }
 
+// Real-time synchronization between DOM inputs, in-memory config, and localStorage
+function autoSyncTelephonyFromDOM(source) {
+  const inSid = document.getElementById('telephonySidInput')?.value.trim();
+  const inApiKey = document.getElementById('telephonyApiKeyInput')?.value.trim();
+  const inToken = document.getElementById('telephonyTokenInput')?.value.trim();
+  const inCaller = document.getElementById('telephonyCallerIdInput')?.value.trim();
+  const inAgent = document.getElementById('telephonyAgentPhoneInput')?.value.trim();
+  const inSubdomain = document.getElementById('telephonySubdomainInput')?.value;
+  const inWebhook = document.getElementById('telephonyWebhookInput')?.value.trim();
+
+  const mSid = document.getElementById('modalExotelSid')?.value.trim();
+  const mApiKey = document.getElementById('modalExotelApiKey')?.value.trim();
+  const mToken = document.getElementById('modalExotelToken')?.value.trim();
+  const mCaller = document.getElementById('modalExotelCallerId')?.value.trim();
+  const mAgent = document.getElementById('modalExotelAgentPhone')?.value.trim();
+  const mSubdomain = document.getElementById('modalExotelSubdomain')?.value;
+  const mWebhook = document.getElementById('modalWebhookUrl')?.value.trim();
+
+  const mTwilioSid = document.getElementById('modalTwilioSid')?.value.trim();
+  const mTwilioToken = document.getElementById('modalTwilioToken')?.value.trim();
+  const mTwilioCaller = document.getElementById('modalTwilioCallerId')?.value.trim();
+
+  if (source === 'modal') {
+    if (TELEPHONY_CONFIG.provider === 'twilio') {
+      if (mTwilioSid !== undefined) TELEPHONY_CONFIG.sid = mTwilioSid;
+      if (mTwilioToken !== undefined) TELEPHONY_CONFIG.token = mTwilioToken;
+      if (mTwilioCaller !== undefined) TELEPHONY_CONFIG.callerId = mTwilioCaller;
+    } else {
+      if (mSid !== undefined) TELEPHONY_CONFIG.sid = mSid;
+      if (mApiKey !== undefined) TELEPHONY_CONFIG.apiKey = mApiKey;
+      if (mToken !== undefined) TELEPHONY_CONFIG.token = mToken;
+      if (mCaller !== undefined) TELEPHONY_CONFIG.callerId = mCaller;
+      if (mAgent !== undefined) TELEPHONY_CONFIG.agentPhone = mAgent;
+      if (mSubdomain !== undefined) TELEPHONY_CONFIG.subdomain = mSubdomain;
+    }
+    if (mWebhook !== undefined) TELEPHONY_CONFIG.webhookUrl = mWebhook;
+
+    // Mirror to inline inputs if not currently focused
+    const elInSid = document.getElementById('telephonySidInput');
+    if (elInSid && document.activeElement !== elInSid) elInSid.value = TELEPHONY_CONFIG.sid || '';
+    const elInKey = document.getElementById('telephonyApiKeyInput');
+    if (elInKey && document.activeElement !== elInKey) elInKey.value = TELEPHONY_CONFIG.apiKey || '';
+    const elInToken = document.getElementById('telephonyTokenInput');
+    if (elInToken && document.activeElement !== elInToken) elInToken.value = TELEPHONY_CONFIG.token || '';
+    const elInCaller = document.getElementById('telephonyCallerIdInput');
+    if (elInCaller && document.activeElement !== elInCaller) elInCaller.value = TELEPHONY_CONFIG.callerId || '';
+    const elInAgent = document.getElementById('telephonyAgentPhoneInput');
+    if (elInAgent && document.activeElement !== elInAgent) elInAgent.value = TELEPHONY_CONFIG.agentPhone || '';
+    const elInSub = document.getElementById('telephonySubdomainInput');
+    if (elInSub && document.activeElement !== elInSub && TELEPHONY_CONFIG.subdomain) elInSub.value = TELEPHONY_CONFIG.subdomain;
+    const elInWeb = document.getElementById('telephonyWebhookInput');
+    if (elInWeb && document.activeElement !== elInWeb) elInWeb.value = TELEPHONY_CONFIG.webhookUrl || '';
+  } else {
+    // source is 'inline' or auto-called before placing a call / test
+    if (inSid !== undefined && inSid !== '') TELEPHONY_CONFIG.sid = inSid;
+    else if (mSid) TELEPHONY_CONFIG.sid = mSid;
+
+    if (inApiKey !== undefined && inApiKey !== '') TELEPHONY_CONFIG.apiKey = inApiKey;
+    else if (mApiKey) TELEPHONY_CONFIG.apiKey = mApiKey;
+
+    if (inToken !== undefined && inToken !== '') TELEPHONY_CONFIG.token = inToken;
+    else if (mToken) TELEPHONY_CONFIG.token = mToken;
+
+    if (inCaller !== undefined && inCaller !== '') TELEPHONY_CONFIG.callerId = inCaller;
+    else if (mCaller) TELEPHONY_CONFIG.callerId = mCaller;
+
+    if (inAgent !== undefined && inAgent !== '') TELEPHONY_CONFIG.agentPhone = inAgent;
+    else if (mAgent) TELEPHONY_CONFIG.agentPhone = mAgent;
+
+    if (inSubdomain !== undefined && inSubdomain !== '') TELEPHONY_CONFIG.subdomain = inSubdomain;
+    else if (mSubdomain) TELEPHONY_CONFIG.subdomain = mSubdomain;
+
+    if (inWebhook !== undefined && inWebhook !== '') TELEPHONY_CONFIG.webhookUrl = inWebhook;
+    else if (mWebhook) TELEPHONY_CONFIG.webhookUrl = mWebhook;
+
+    // Mirror to modal inputs if not currently focused
+    const elMSid = document.getElementById('modalExotelSid');
+    if (elMSid && document.activeElement !== elMSid) elMSid.value = TELEPHONY_CONFIG.sid || '';
+    const elMKey = document.getElementById('modalExotelApiKey');
+    if (elMKey && document.activeElement !== elMKey) elMKey.value = TELEPHONY_CONFIG.apiKey || '';
+    const elMToken = document.getElementById('modalExotelToken');
+    if (elMToken && document.activeElement !== elMToken) elMToken.value = TELEPHONY_CONFIG.token || '';
+    const elMCaller = document.getElementById('modalExotelCallerId');
+    if (elMCaller && document.activeElement !== elMCaller) elMCaller.value = TELEPHONY_CONFIG.callerId || '';
+    const elMAgent = document.getElementById('modalExotelAgentPhone');
+    if (elMAgent && document.activeElement !== elMAgent) elMAgent.value = TELEPHONY_CONFIG.agentPhone || '';
+    const elMSub = document.getElementById('modalExotelSubdomain');
+    if (elMSub && document.activeElement !== elMSub && TELEPHONY_CONFIG.subdomain) elMSub.value = TELEPHONY_CONFIG.subdomain;
+    const elMWeb = document.getElementById('modalWebhookUrl');
+    if (elMWeb && document.activeElement !== elMWeb) elMWeb.value = TELEPHONY_CONFIG.webhookUrl || '';
+  }
+
+  try {
+    localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
+  } catch(e) {}
+
+  updateGatewayBadge();
+  if (typeof generateTelephonyCode === 'function') generateTelephonyCode();
+}
+
 function syncTelephonyConfigUI() {
   const mSid = document.getElementById('modalExotelSid');
   const mApiKey = document.getElementById('modalExotelApiKey');
@@ -2052,6 +2152,7 @@ function executeBulkRunSimulator() {
 
 // Live Gateway Connection Validation (Test Button in Modal)
 async function testTelephonyGatewayConnection() {
+  autoSyncTelephonyFromDOM('modal');
   const btn = document.getElementById('btnTestGatewayConnection');
   const resultDiv = document.getElementById('modalGatewayTestResult');
   const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
@@ -2141,6 +2242,7 @@ function onModalProviderChange(provider) {
 }
 
 function saveTelephonyModalConfig() {
+  autoSyncTelephonyFromDOM('modal');
   const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
   TELEPHONY_CONFIG.provider = provider;
 
@@ -2167,6 +2269,7 @@ function saveTelephonyModalConfig() {
 }
 
 function saveTelephonyInlineConfig() {
+  autoSyncTelephonyFromDOM('inline');
   const sid = document.getElementById('telephonySidInput')?.value.trim() || '';
   const apiKey = document.getElementById('telephonyApiKeyInput')?.value.trim() || '';
   const token = document.getElementById('telephonyTokenInput')?.value.trim() || '';
@@ -2189,6 +2292,7 @@ function saveTelephonyInlineConfig() {
 }
 
 async function testTelephonyInlineConnection() {
+  autoSyncTelephonyFromDOM('inline');
   const btn = document.getElementById('btnTestInlineConnection');
   const resultDiv = document.getElementById('telephonyInlineTestResult');
   const provider = TELEPHONY_CONFIG.provider || 'exotel';
@@ -2449,6 +2553,7 @@ function playTelephoneRingTone() {
 
 // Outbound Telephony API Dispatcher (Bridge + Webhooks + Carrier)
 async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
+  autoSyncTelephonyFromDOM();
   const callerId = TELEPHONY_CONFIG.callerId || '08047198800';
   const cleanPhone = phone.replace(/[^0-9]/g, '');
 
@@ -2642,6 +2747,7 @@ function fallbackBrowserIndianFemaleTts(text, langKey, onEndCallback) {
 // ----------------------------------------------------------------------------
 
 async function placeRealIvrCall() {
+  autoSyncTelephonyFromDOM();
   const phone = document.getElementById('ivrTargetPhone')?.value.trim();
   if (!phone || phone.length < 8) {
     showToast('Please enter an Indian phone number (e.g. +91 98201 44552)');
@@ -3264,6 +3370,7 @@ function handleBulkPhoneUpload(event) {
 }
 
 function startBulkIvrCampaign(forceSimulator = false) {
+  autoSyncTelephonyFromDOM();
   const text = document.getElementById('bulkPhoneInput')?.value || '';
   const numbers = parseIndianNumbers(text);
 
