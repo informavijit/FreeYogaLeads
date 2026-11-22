@@ -1762,6 +1762,27 @@ const DEFAULT_IVR_SCRIPTS = {
   }
 };
 
+// Multilingual Disconnect & Coordinator Callback Messages
+const IVR_COORDINATOR_MESSAGES = {
+  hi: 'हमारे समन्वयकों में से एक शीघ्र ही आपको वापस कॉल करेंगे। धन्यवाद, नमस्ते!',
+  en: 'One of our Coordinators will call you back shortly. Thank you, Namaste!',
+  te: 'మా కోఆర్డినేటర్లలో ఒకరు త్వరలోనే మీకు తిరిగి కాల్ చేస్తారు. ధన్యవాదాలు, నమస్కారం!',
+  ta: 'எங்கள் ஒருங்கிணைப்பாளர்களில் ஒருவர் விரைவில் உங்களை மீண்டும் அழைப்பார். நன்றி, வணக்கம்!',
+  kn: 'ನಮ್ಮ ಸಂಯೋಜಕರಲ್ಲಿ ಒಬ್ಬರು ಶೀಘ್ರದಲ್ಲೇ ನಿಮಗೆ ಮರಳಿ ಕರೆ ಮಾಡುತ್ತಾರೆ. ಧನ್ಯವಾದಗಳು, ನಮಸ್ಕಾರ!',
+  ml: 'ഞങ്ങളുടെ കോർഡിനേറ്റർമാരിൽ ഒരാൾ ഉടൻ നിങ്ങളെ തിരിച്ചുവിളിക്കുന്നതാണ്. നന്ദി, നമസ്കാരം!',
+  bn: 'আমাদের সমন্বয়কদের মধ্যে একজন শীঘ্রই আপনাকে আবার কল করবেন। ধন্যবাদ, নমস্কার!'
+};
+
+const IVR_TIMEOUT_MESSAGES = {
+  hi: 'हमें आपकी ओर से कोई उत्तर नहीं मिला। कॉल समाप्त की जा रही है। धन्यवाद, नमस्ते!',
+  en: 'We did not receive any response within 10 seconds. Disconnecting the call now. Thank you, Namaste!',
+  te: 'మీ నుండి ఎలాంటి స్పందన రాలేదు. కాల్ ముగించబడుతోంది. ధన్యవాదాలు, నమస్కారం!',
+  ta: 'உங்களிடமிருந்து எந்த பதிலும் வரவில்லை. அழைப்பு துண்டிக்கப்படுகிறது. நன்றி, வணக்கம்!',
+  kn: 'ನಿಮ್ಮಿಂದ ಯಾವುದೇ ಪ್ರತಿಕ್ರಿಯೆ ಬಂದಿಲ್ಲ. ಕರೆ ಕೊನೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ. ಧನ್ಯವಾದಗಳು, ನಮಸ್ಕಾರ!',
+  ml: 'നിങ്ങളിൽ നിന്ന് പ്രതികരണമൊന്നും ലഭിച്ചില്ല. കോൾ അവസാനിപ്പിക്കുന്നു. നന്ദി, നമസ്കാരം!',
+  bn: 'আপনার থেকে কোনো উত্তর পাওয়া যায়নি। কলটি সমাপ্ত করা হচ্ছে। ধন্যবাদ, নমস্কার!'
+};
+
 // IVR State
 const IVR_STATE = {
   currentLang: 'hi',
@@ -1769,13 +1790,81 @@ const IVR_STATE = {
   activeCall: false,
   callTimerSec: 0,
   timerInterval: null,
-  callStage: 'idle', // 'idle', 'greeting', 'waiting_dtmf', 'responding', 'ended'
+  inactivityTimer: null,
+  inactivityInterval: null,
+  callStage: 'idle', // 'idle', 'greeting', 'waiting_dtmf', 'responding', 'timeout_disconnecting', 'ended'
   currentLead: {
     name: 'Gold Standard Fitness Club',
     phone: '+91 98201 44552'
   },
   telephonyProvider: 'exotel'
 };
+
+// Inactivity (10s No Response) Timer Handlers
+function clearIvrInactivityTimer() {
+  if (IVR_STATE.inactivityTimer) {
+    clearTimeout(IVR_STATE.inactivityTimer);
+    IVR_STATE.inactivityTimer = null;
+  }
+  if (IVR_STATE.inactivityInterval) {
+    clearInterval(IVR_STATE.inactivityInterval);
+    IVR_STATE.inactivityInterval = null;
+  }
+}
+
+function startIvrInactivityTimer() {
+  clearIvrInactivityTimer();
+  if (!IVR_STATE.activeCall) return;
+
+  const lang = IVR_STATE.currentLang || 'hi';
+  const timeoutMsg = IVR_TIMEOUT_MESSAGES[lang] || IVR_TIMEOUT_MESSAGES.en;
+  const statusText = document.getElementById('ivrCallStatusText');
+  const livePrompt = document.getElementById('ivrLivePromptText');
+
+  let remaining = 10;
+  if (statusText) {
+    statusText.innerText = `Call Live - Awaiting Key (Disconnects in ${remaining}s if no input)...`;
+  }
+
+  IVR_STATE.inactivityInterval = setInterval(() => {
+    if (!IVR_STATE.activeCall || IVR_STATE.callStage !== 'waiting_dtmf') {
+      clearIvrInactivityTimer();
+      return;
+    }
+    remaining--;
+    if (remaining > 0) {
+      if (statusText) {
+        statusText.innerText = `Call Live - Awaiting Key (Disconnects in ${remaining}s if no input)...`;
+      }
+    } else {
+      clearIvrInactivityTimer();
+    }
+  }, 1000);
+
+  IVR_STATE.inactivityTimer = setTimeout(() => {
+    if (!IVR_STATE.activeCall || IVR_STATE.callStage !== 'waiting_dtmf') return;
+
+    IVR_STATE.callStage = 'timeout_disconnecting';
+    addIvrLog(`[TIMEOUT 10s] No DTMF input received within 10 seconds. Disconnecting call.`);
+    showToast(`⏱️ No input for 10s. Disconnecting call...`);
+
+    if (statusText) {
+      statusText.innerText = `No input received for 10s - Disconnecting...`;
+    }
+    if (livePrompt) {
+      livePrompt.innerText = `"${timeoutMsg}"`;
+    }
+
+    recordIvrOutcomeToCrm('No Response within 10s - Call Disconnected (Cold Lead)');
+
+    // Speak timeout farewell in respective language and hang up
+    speakIvrPrompt(timeoutMsg, lang, () => {
+      setTimeout(() => {
+        hangupIvrCallSimulation(true);
+      }, 1200);
+    });
+  }, 10000);
+}
 
 // Telephony Gateway Configuration State
 const TELEPHONY_CONFIG = {
@@ -2397,8 +2486,9 @@ async function placeRealIvrCall() {
       speakIvrPrompt(welcomeScript, langKey, () => {
         if (!IVR_STATE.activeCall) return;
         IVR_STATE.callStage = 'waiting_dtmf';
-        statusText.innerText = 'Call Live - Awaiting Lead DTMF Key (1, 2, 3, 9, 0)';
-        livePrompt.innerText = 'Call connected! Lead is now selecting options on dialpad.';
+        statusText.innerText = 'Call Live - Awaiting Key (Disconnects in 10s if no input)...';
+        livePrompt.innerText = 'Call connected! Select an option on dialpad (Call disconnects in 10s if no response).';
+        startIvrInactivityTimer();
       });
 
     }, 2000);
@@ -2468,19 +2558,23 @@ function startIvrCallSimulation() {
     speakIvrPrompt(welcomeScript, IVR_STATE.currentLang, () => {
       if (!IVR_STATE.activeCall) return;
       IVR_STATE.callStage = 'waiting_dtmf';
-      statusText.innerText = 'Audio Ready - Press 1, 2, 3, 9, or 0 on Dialpad';
-      livePrompt.innerText = 'Waiting for keypress... (Use the on-screen dialpad below)';
+      statusText.innerText = 'Audio Ready - Awaiting Key (Disconnects in 10s if no input)...';
+      livePrompt.innerText = 'Waiting for keypress... (Use dialpad below - Auto-disconnects in 10s if no input)';
+      startIvrInactivityTimer();
     });
   }, 1000);
 }
 
-function hangupIvrCallSimulation() {
+function hangupIvrCallSimulation(isTimeout = false) {
   IVR_STATE.activeCall = false;
+
+  // Clear 10-second inactivity timers
+  clearIvrInactivityTimer();
 
   // Stop audio immediately
   stopIvrAudio();
 
-  // If user hung up before pressing any key, record as Cold lead
+  // If user hung up before pressing any key and not timeout, record as Cold lead
   if (!IVR_STATE.dtmfRecorded && (IVR_STATE.callStage === 'waiting_dtmf' || IVR_STATE.callStage === 'greeting')) {
     recordIvrOutcomeToCrm('Call answered but hung up without key selection (Cold Lead)');
   }
@@ -2506,15 +2600,20 @@ function hangupIvrCallSimulation() {
   btnHangup.classList.add('opacity-30', 'cursor-not-allowed');
 
   dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-600';
-  statusText.innerText = 'Call Terminated - Idle';
-  livePrompt.innerText = 'Call ended. Select a language or click "Place Outbound IVR Call" to connect.';
+  statusText.innerText = isTimeout ? 'Call Disconnected (10s Inactivity Timeout)' : 'Call Disconnected - Coordinator Follow-Up Scheduled';
+  livePrompt.innerText = isTimeout
+    ? 'Call disconnected due to 10 seconds with no response. Select a language or dial again.'
+    : 'Call disconnected. "One of our Coordinators will call you back" delivered to lead.';
 
-  addIvrLog(`[HANGUP] Call ended. Total duration: ${document.getElementById('ivrCallTimer')?.innerText || '00:00'}`);
+  addIvrLog(`[CALL DISCONNECTED] Call ended. Total duration: ${document.getElementById('ivrCallTimer')?.innerText || '00:00'}`);
 }
 
 function pressDtmfKey(digit) {
   playDtmfTone(digit);
   IVR_STATE.dtmfRecorded = true;
+
+  // Clear 10-second inactivity timer immediately upon user response
+  clearIvrInactivityTimer();
 
   if (!IVR_STATE.activeCall) {
     showToast(`DTMF Tone '${digit}' generated. Start call to test flow response!`);
@@ -2522,6 +2621,9 @@ function pressDtmfKey(digit) {
   }
 
   const s = IVR_STATE.scripts[IVR_STATE.currentLang];
+  const langKey = IVR_STATE.currentLang || 'hi';
+  const coordinatorMsg = IVR_COORDINATOR_MESSAGES[langKey] || IVR_COORDINATOR_MESSAGES.en;
+
   let responseText = '';
   let outcome = '';
 
@@ -2539,29 +2641,36 @@ function pressDtmfKey(digit) {
     outcome = 'Action Triggered: Sent Curriculum & Syllabus on WhatsApp';
   } else if (digit === '0') {
     responseText = s.key0;
-    outcome = 'Action Triggered: Live Call Transfer to Instructor';
+    outcome = 'Action Triggered: Live Call Transfer to Senior Counselor';
   } else {
     responseText = 'Invalid option. Please press 1, 2, 3, 9, or 0.';
     outcome = `Unmapped Key '${digit}'`;
   }
 
-  addIvrLog(`[KEYPRESS '${digit}'] ${outcome}`);
+  // Combine option response + "One of our Coordinators will call you back" in respective language
+  const fullSpokenResponse = `${responseText} ${coordinatorMsg}`;
+
+  addIvrLog(`[KEYPRESS '${digit}'] ${outcome}. Coordinator callback announced.`);
 
   const livePrompt = document.getElementById('ivrLivePromptText');
   const statusText = document.getElementById('ivrCallStatusText');
 
-  statusText.innerText = `Key ${digit} Pressed - Responding`;
-  livePrompt.innerText = `"${responseText}"`;
+  statusText.innerText = `Key ${digit} Pressed - "One of our Coordinators will call you back"`;
+  livePrompt.innerText = `"${fullSpokenResponse}"`;
 
-  // Update lead in CRM with captured IVR outcome & temperature
-  recordIvrOutcomeToCrm(outcome);
+  // Update lead in CRM with captured outcome & temperature
+  recordIvrOutcomeToCrm(`${outcome} - One of our Coordinators will call you back`);
 
-  // Play audio response
-  speakIvrPrompt(responseText, IVR_STATE.currentLang, () => {
+  IVR_STATE.callStage = 'responding';
+
+  // Play audio response in Indian Female voice, then disconnect call automatically
+  speakIvrPrompt(fullSpokenResponse, IVR_STATE.currentLang, () => {
     if (!IVR_STATE.activeCall) return;
+    statusText.innerText = 'Call Concluded - Disconnecting...';
     setTimeout(() => {
-      hangupIvrCallSimulation();
-    }, 2000);
+      hangupIvrCallSimulation(false);
+      showToast(`📞 Call disconnected: One of our Coordinators will call you back!`);
+    }, 1200);
   });
 }
 
@@ -2677,18 +2786,22 @@ Digits:
 */`;
   } else if (provider === 'twilio') {
     if (labelEl) labelEl.innerText = `Twilio Voice TwiML XML - ${s.label}`;
+    const timeoutMsg = IVR_TIMEOUT_MESSAGES[lang] || IVR_TIMEOUT_MESSAGES.en;
     outEl.value = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather numDigits="1" action="https://your-server.com/ivr-response" method="POST" timeout="8">
+  <Gather numDigits="1" action="https://your-server.com/ivr-response" method="POST" timeout="10">
     <Say language="${s.langCode}" voice="Polly.Aditi">
       ${s.welcome}
     </Say>
   </Gather>
-  <Say language="${s.langCode}">We did not receive any input. Goodbye!</Say>
+  <!-- 10-Second Inactivity Timeout Disconnect -->
+  <Say language="${s.langCode}" voice="Polly.Aditi">${timeoutMsg}</Say>
   <Hangup/>
 </Response>`;
   } else {
     if (labelEl) labelEl.innerText = `Generic Webhook JSON (n8n / Make / Zapier)`;
+    const coordinatorMsg = IVR_COORDINATOR_MESSAGES[lang] || IVR_COORDINATOR_MESSAGES.en;
+    const timeoutMsg = IVR_TIMEOUT_MESSAGES[lang] || IVR_TIMEOUT_MESSAGES.en;
     outEl.value = JSON.stringify({
       event: "trigger_outbound_ivr",
       timestamp: new Date().toISOString(),
@@ -2700,12 +2813,17 @@ Digits:
       },
       ivrConfig: {
         greetingAudioText: s.welcome,
+        inactivityTimeoutSeconds: 10,
+        onTimeoutAction: "disconnect_call",
+        onTimeoutPrompt: timeoutMsg,
+        onResponseAction: "disconnect_call_after_callback_notice",
+        coordinatorCallbackPrompt: coordinatorMsg,
         menuActions: {
-          "1": { offering: "Yoga Teacher Training", responseAudio: s.key1 },
-          "2": { offering: "Personal Online Yoga Classes", responseAudio: s.key2 },
-          "3": { offering: "Corporate Wellness", responseAudio: s.key3 },
-          "9": { action: "whatsapp_syllabus_dispatch", responseAudio: s.key9 },
-          "0": { action: "live_transfer_agent", transferNumber: "+919870347348" }
+          "1": { offering: "Yoga Teacher Training", responseAudio: `${s.key1} ${coordinatorMsg}` },
+          "2": { offering: "Personal Online Yoga Classes", responseAudio: `${s.key2} ${coordinatorMsg}` },
+          "3": { offering: "Corporate Wellness", responseAudio: `${s.key3} ${coordinatorMsg}` },
+          "9": { action: "whatsapp_syllabus_dispatch", responseAudio: `${s.key9} ${coordinatorMsg}` },
+          "0": { action: "live_transfer_agent", transferNumber: "+919870347348", responseAudio: `${s.key0} ${coordinatorMsg}` }
         }
       }
     }, null, 2);
