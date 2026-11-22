@@ -140,61 +140,97 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
         # --------------------------------------------------------------------
         if self.path == '/test-gateway':
             provider = req.get('provider', 'exotel')
-            sid = req.get('sid', '').strip()
-            token = req.get('token', '').strip()
+            account_sid = (req.get('sid') or '').strip()
+            api_key = (req.get('apiKey') or req.get('key') or '').strip()
+            api_token = (req.get('token') or '').strip()
+            subdomain = (req.get('subdomain') or 'api.in.exotel.com').strip()
 
-            if not sid or not token:
+            if provider == 'exotel':
+                if not account_sid or not api_token:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "valid": False,
+                        "message": "Exotel requires both Account SID and API Token (and API Key)."
+                    }).encode('utf-8'))
+                    return
+
+                # If user did not provide separate api_key, use account_sid or test both
+                effective_key = api_key or account_sid
+                auth_str = base64.b64encode(f"{effective_key}:{api_token}".encode('utf-8')).decode('utf-8')
+
+                # Test on requested subdomain, with automatic fallback
+                hosts_to_test = [subdomain]
+                alt_host = 'api.exotel.com' if 'in.exotel' in subdomain else 'api.in.exotel.com'
+                hosts_to_test.append(alt_host)
+
+                last_code = None
+                last_err = ""
+                for host in hosts_to_test:
+                    url = f"https://{host}/v1/Accounts/{account_sid}.json"
+                    http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
+                    try:
+                        with urllib.request.urlopen(http_req, timeout=8) as resp:
+                            data = json.loads(resp.read().decode('utf-8'))
+                            self.send_response(200)
+                            self.send_header('Content-Type', 'application/json')
+                            self.send_header('Access-Control-Allow-Origin', '*')
+                            self.end_headers()
+                            self.wfile.write(json.dumps({
+                                "valid": True,
+                                "carrier": f"Exotel India ({host})",
+                                "message": f"✅ Exotel Account '{account_sid}' verified on {host}! Ready for live telecom outbound calling."
+                            }).encode('utf-8'))
+                            return
+                    except urllib.error.HTTPError as he:
+                        last_code = he.code
+                        last_err = he.read().decode('utf-8')
+                        continue
+                    except Exception as ex:
+                        last_err = str(ex)
+                        continue
+
+                # If failed, return actionable guidance
+                advice = f"Exotel Error ({last_code}): {last_err}"
+                try:
+                    p = json.loads(last_err)
+                    if p.get('RestException', {}).get('Code') == 34010:
+                        advice = (
+                            "❌ Exotel Error 34010 (Invalid Auth Key/Token):\n"
+                            "1. Account SID: Your account name (e.g. bodhischoolofyoga) from your Exotel dashboard URL.\n"
+                            "2. API Key: The 32-character key from Settings > API Settings.\n"
+                            "3. API Token: The API token from Settings > API Settings."
+                        )
+                except Exception:
+                    pass
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
                     "valid": False,
-                    "message": "Account SID and API Token/Key cannot be empty."
+                    "carrier": "Exotel India",
+                    "message": advice
                 }).encode('utf-8'))
                 return
 
-            if provider == 'exotel':
-                url = f"https://api.exotel.com/v1/Accounts/{sid}.json"
-                auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
-                http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
-                try:
-                    with urllib.request.urlopen(http_req, timeout=8) as resp:
-                        data = json.loads(resp.read().decode('utf-8'))
-                        self.send_response(200)
-                        self.send_header('Content-Type', 'application/json')
-                        self.send_header('Access-Control-Allow-Origin', '*')
-                        self.end_headers()
-                        self.wfile.write(json.dumps({
-                            "valid": True,
-                            "carrier": "Exotel India",
-                            "message": f"✅ Exotel Account '{sid}' verified! Active and ready for live Indian telecom dialing."
-                        }).encode('utf-8'))
-                        return
-                except urllib.error.HTTPError as he:
+            elif provider == 'twilio':
+                sid = account_sid
+                token = api_token
+                if not sid or not token:
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
                     self.send_header('Access-Control-Allow-Origin', '*')
                     self.end_headers()
                     self.wfile.write(json.dumps({
                         "valid": False,
-                        "carrier": "Exotel India",
-                        "message": f"❌ Exotel Error {he.code}: Invalid Account SID or Token. Please verify in your Exotel dashboard."
-                    }).encode('utf-8'))
-                    return
-                except Exception as ex:
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({
-                        "valid": False,
-                        "carrier": "Exotel India",
-                        "message": f"⚠️ Could not reach Exotel: {ex}"
+                        "message": "Twilio Account SID and Auth Token cannot be empty."
                     }).encode('utf-8'))
                     return
 
-            elif provider == 'twilio':
                 url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}.json"
                 auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
                 http_req = urllib.request.Request(url, headers={'Authorization': f"Basic {auth_str}"})
@@ -250,74 +286,134 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
         # 2. OUTBOUND CALL DISPATCH ENDPOINT (/call)
         # --------------------------------------------------------------------
         to_phone = req.get('to', '').strip()
-        caller_id = req.get('callerId', '+918047198800')
+        caller_id = (req.get('callerId') or '08047198800').strip()
         provider = req.get('provider', 'exotel')
-        sid = req.get('sid', '').strip()
-        token = req.get('token', '').strip()
+        account_sid = (req.get('sid') or '').strip()
+        api_key = (req.get('apiKey') or req.get('key') or '').strip()
+        api_token = (req.get('token') or '').strip()
+        agent_phone = (req.get('agentPhone') or '+91 98703 47348').strip()
+        subdomain = (req.get('subdomain') or 'api.in.exotel.com').strip()
         lang = req.get('language', 'Hindi')
 
         clean_to = ''.join(c for c in to_phone if c.isdigit())
         if clean_to.startswith('91') and len(clean_to) == 12:
             clean_to = clean_to[2:] # 10 digit Indian mobile
+        elif clean_to.startswith('0') and len(clean_to) == 11:
+            clean_to = clean_to[1:]
 
         print(f"\n[TELEPHONY DISPATCH] To: +91 {clean_to} | Carrier: {provider} | Lang: {lang}")
 
         # --------------------------------------------------------------------
         # A. REAL EXOTEL INDIA OUTBOUND CALL DISPATCH
         # --------------------------------------------------------------------
-        if provider == 'exotel' and sid and token:
-            exotel_url = f"https://api.exotel.com/v1/Accounts/{sid}/Calls/connect.json"
-            auth_str = base64.b64encode(f"{sid}:{token}".encode('utf-8')).decode('utf-8')
-            
-            payload = urllib.parse.urlencode({
-                'From': caller_id,
-                'To': clean_to,
-                'CallerId': caller_id,
-                'CustomField': lang
-            }).encode('utf-8')
+        if provider == 'exotel' and account_sid and api_token:
+            clean_agent = ''.join(c for c in agent_phone if c.isdigit())
+            if clean_agent.startswith('91') and len(clean_agent) == 12:
+                clean_agent = clean_agent[2:]
+            elif clean_agent.startswith('0') and len(clean_agent) == 11:
+                clean_agent = clean_agent[1:]
 
-            http_req = urllib.request.Request(exotel_url, data=payload, headers={
-                'Authorization': f"Basic {auth_str}",
-                'Content-Type': 'application/x-www-form-urlencoded'
-            })
+            clean_caller = caller_id.replace('+', '').replace(' ', '').replace('-', '')
+            if len(clean_caller) == 10 and clean_caller.startswith(('80', '11', '22', '40', '44')):
+                clean_caller = '0' + clean_caller
 
-            try:
-                with urllib.request.urlopen(http_req, timeout=12) as response:
-                    res_body = response.read().decode('utf-8')
-                    res_json = json.loads(res_body)
-                    call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
-                    print(f"   ✅ Real Exotel Call Dispatched: SID {call_sid}")
+            effective_key = api_key or account_sid
+            auth_str = base64.b64encode(f"{effective_key}:{api_token}".encode('utf-8')).decode('utf-8')
+
+            # We will attempt primary subdomain (api.in.exotel.com), and auto-fallback to (api.exotel.com)
+            hosts_to_try = [subdomain]
+            alt_host = 'api.exotel.com' if 'in.exotel' in subdomain else 'api.in.exotel.com'
+            hosts_to_try.append(alt_host)
+
+            auth_variants = [auth_str]
+            if api_key and api_key != account_sid:
+                alt_auth = base64.b64encode(f"{account_sid}:{api_token}".encode('utf-8')).decode('utf-8')
+                auth_variants.append(alt_auth)
+
+            from_num = f"0{clean_agent}" if (clean_agent and not clean_agent.startswith('0')) else (clean_agent or f"0{clean_to}")
+            to_num = f"0{clean_to}" if not clean_to.startswith('0') else clean_to
+
+            last_error = ""
+            last_code = 401
+
+            for host in hosts_to_try:
+                for a_str in auth_variants:
+                    exotel_url = f"https://{host}/v1/Accounts/{account_sid}/Calls/connect.json"
                     
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({
-                        "status": "success",
-                        "hasCredentials": True,
-                        "carrier": "Exotel India Telecom Trunk",
-                        "callSid": call_sid,
-                        "to": f"+91 {clean_to}",
-                        "message": f"Real call dispatched to +91 {clean_to} via Exotel India!"
-                    }).encode('utf-8'))
-                    return
-            except urllib.error.HTTPError as he:
-                err_content = he.read().decode('utf-8')
-                print(f"   ❌ Exotel API Error: {he.code} - {err_content}")
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json.dumps({
-                    "status": "carrier_error",
-                    "hasCredentials": True,
-                    "carrier": "Exotel India",
-                    "httpCode": he.code,
-                    "message": f"Exotel API Error ({he.code}): {err_content}"
-                }).encode('utf-8'))
-                return
-            except Exception as ex:
-                print(f"   ⚠️ Exotel Network Exception: {ex}")
+                    payload_data = {
+                        'From': from_num,
+                        'To': to_num,
+                        'CallerId': clean_caller,
+                        'TimeOut': '30',
+                        'CustomField': lang
+                    }
+                    payload = urllib.parse.urlencode(payload_data).encode('utf-8')
+
+                    http_req = urllib.request.Request(exotel_url, data=payload, headers={
+                        'Authorization': f"Basic {a_str}",
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    })
+
+                    try:
+                        with urllib.request.urlopen(http_req, timeout=12) as response:
+                            res_body = response.read().decode('utf-8')
+                            res_json = json.loads(res_body)
+                            call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
+                            print(f"   ✅ Real Exotel Call Dispatched ({host}): SID {call_sid}")
+                            
+                            self.send_response(200)
+                            self.send_header('Content-Type', 'application/json')
+                            self.send_header('Access-Control-Allow-Origin', '*')
+                            self.end_headers()
+                            self.wfile.write(json.dumps({
+                                "status": "success",
+                                "hasCredentials": True,
+                                "carrier": f"Exotel India ({host})",
+                                "callSid": call_sid,
+                                "to": f"+91 {clean_to}",
+                                "message": f"Real call dispatched to +91 {clean_to} via Exotel! (Bridging {from_num} ➔ {to_num})"
+                            }).encode('utf-8'))
+                            return
+                    except urllib.error.HTTPError as he:
+                        last_code = he.code
+                        last_error = he.read().decode('utf-8')
+                        print(f"   [Exotel Attempt Failed] Host: {host} | Code: {he.code} | {last_error}")
+                        continue
+                    except Exception as ex:
+                        last_error = str(ex)
+                        print(f"   [Exotel Exception] Host: {host} | {ex}")
+                        continue
+
+            # If all attempts failed, report friendly troubleshooting
+            friendly_msg = f"Exotel API Error ({last_code}): {last_error}"
+            try:
+                err_parsed = json.loads(last_error)
+                rest_ex = err_parsed.get('RestException', {})
+                if rest_ex.get('Code') == 34010:
+                    friendly_msg = (
+                        "Exotel Error 34010 (Invalid Auth Key/Token).\n\n"
+                        "How to resolve in Gateway Settings:\n"
+                        "1. Account SID: Your account name from your Exotel dashboard URL (e.g. bodhischoolofyoga).\n"
+                        "2. API Key: The 32-character key from Settings > API Settings.\n"
+                        "3. API Token: The API Token from Settings > API Settings.\n"
+                        "4. Cluster: Select 'India Cluster (api.in.exotel.com)'.\n\n"
+                        "Tip: You can also click '📱 Direct Dial (SIM)' to call this number right now from your phone with 0 API keys!"
+                    )
+            except Exception:
+                pass
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "status": "carrier_error",
+                "hasCredentials": True,
+                "carrier": "Exotel India",
+                "httpCode": last_code,
+                "message": friendly_msg
+            }).encode('utf-8'))
+            return
 
         # --------------------------------------------------------------------
         # B. REAL TWILIO VOICE OUTBOUND CALL DISPATCH

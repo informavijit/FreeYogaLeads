@@ -1869,9 +1869,12 @@ function startIvrInactivityTimer() {
 // Telephony Gateway Configuration State
 const TELEPHONY_CONFIG = {
   provider: 'exotel',
-  sid: '',
-  token: '',
-  callerId: '+91 80 4719 8800',
+  sid: '',              // Account SID (Account Handle)
+  apiKey: '',           // Exotel API Key (Settings > API Settings)
+  token: '',            // Exotel API Token or Twilio Auth Token
+  callerId: '08047198800', // Virtual ExoPhone Caller ID
+  agentPhone: '+91 98703 47348', // Counselor phone to bridge
+  subdomain: 'api.in.exotel.com', // India Cluster
   webhookUrl: ''
 };
 
@@ -1887,28 +1890,35 @@ function initTelephonyConfig() {
 }
 
 function syncTelephonyConfigUI() {
-  const sidIn = document.getElementById('telephonySidInput');
-  const tokenIn = document.getElementById('telephonyTokenInput');
-  const callerIdIn = document.getElementById('telephonyCallerIdInput');
-  const webhookIn = document.getElementById('telephonyWebhookInput');
-
   const mSid = document.getElementById('modalExotelSid');
+  const mApiKey = document.getElementById('modalExotelApiKey');
   const mToken = document.getElementById('modalExotelToken');
   const mCaller = document.getElementById('modalExotelCallerId');
+  const mAgent = document.getElementById('modalExotelAgentPhone');
+  const mSubdomain = document.getElementById('modalExotelSubdomain');
+
+  const mTwilioSid = document.getElementById('modalTwilioSid');
+  const mTwilioToken = document.getElementById('modalTwilioToken');
+  const mTwilioCaller = document.getElementById('modalTwilioCallerId');
+
   const mWebhook = document.getElementById('modalWebhookUrl');
   const mProvider = document.getElementById('modalTelephonyProvider');
 
-  if (sidIn) sidIn.value = TELEPHONY_CONFIG.sid || '';
-  if (tokenIn) tokenIn.value = TELEPHONY_CONFIG.token || '';
-  if (callerIdIn) callerIdIn.value = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
-  if (webhookIn) webhookIn.value = TELEPHONY_CONFIG.webhookUrl || '';
-
-  if (mSid) mSid.value = TELEPHONY_CONFIG.sid || '';
-  if (mToken) mToken.value = TELEPHONY_CONFIG.token || '';
-  if (mCaller) mCaller.value = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
-  if (mWebhook) mWebhook.value = TELEPHONY_CONFIG.webhookUrl || '';
   if (mProvider) mProvider.value = TELEPHONY_CONFIG.provider || 'exotel';
+  if (mSid) mSid.value = TELEPHONY_CONFIG.sid || '';
+  if (mApiKey) mApiKey.value = TELEPHONY_CONFIG.apiKey || '';
+  if (mToken) mToken.value = TELEPHONY_CONFIG.token || '';
+  if (mCaller) mCaller.value = TELEPHONY_CONFIG.callerId || '08047198800';
+  if (mAgent) mAgent.value = TELEPHONY_CONFIG.agentPhone || '+91 98703 47348';
+  if (mSubdomain) mSubdomain.value = TELEPHONY_CONFIG.subdomain || 'api.in.exotel.com';
 
+  if (mTwilioSid) mTwilioSid.value = TELEPHONY_CONFIG.provider === 'twilio' ? TELEPHONY_CONFIG.sid : '';
+  if (mTwilioToken) mTwilioToken.value = TELEPHONY_CONFIG.provider === 'twilio' ? TELEPHONY_CONFIG.token : '';
+  if (mTwilioCaller) mTwilioCaller.value = TELEPHONY_CONFIG.provider === 'twilio' ? TELEPHONY_CONFIG.callerId : '';
+
+  if (mWebhook) mWebhook.value = TELEPHONY_CONFIG.webhookUrl || '';
+
+  onModalProviderChange(TELEPHONY_CONFIG.provider || 'exotel');
   updateGatewayBadge();
 }
 
@@ -2027,13 +2037,28 @@ async function testTelephonyGatewayConnection() {
   const btn = document.getElementById('btnTestGatewayConnection');
   const resultDiv = document.getElementById('modalGatewayTestResult');
   const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
-  const sid = document.getElementById('modalExotelSid')?.value.trim() || '';
-  const token = document.getElementById('modalExotelToken')?.value.trim() || '';
+
+  let sid = '';
+  let apiKey = '';
+  let token = '';
+  let subdomain = 'api.in.exotel.com';
+
+  if (provider === 'exotel') {
+    sid = document.getElementById('modalExotelSid')?.value.trim() || '';
+    apiKey = document.getElementById('modalExotelApiKey')?.value.trim() || '';
+    token = document.getElementById('modalExotelToken')?.value.trim() || '';
+    subdomain = document.getElementById('modalExotelSubdomain')?.value || 'api.in.exotel.com';
+  } else if (provider === 'twilio') {
+    sid = document.getElementById('modalTwilioSid')?.value.trim() || '';
+    token = document.getElementById('modalTwilioToken')?.value.trim() || '';
+  }
 
   if (!sid || !token) {
     if (resultDiv) {
       resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-200 block';
-      resultDiv.innerText = '⚠️ Please enter both Account SID and API Token above before testing.';
+      resultDiv.innerText = provider === 'exotel' 
+        ? '⚠️ Please enter Exotel Account SID and API Token (and API Key) above before testing.'
+        : '⚠️ Please enter Twilio Account SID and Auth Token before testing.';
       resultDiv.classList.remove('hidden');
     }
     return;
@@ -2048,7 +2073,7 @@ async function testTelephonyGatewayConnection() {
     const res = await fetch('http://localhost:5000/test-gateway', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider, sid, token })
+      body: JSON.stringify({ provider, sid, apiKey, token, subdomain })
     });
     const data = await res.json();
     if (resultDiv) {
@@ -2057,7 +2082,7 @@ async function testTelephonyGatewayConnection() {
         resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-emerald-50 text-emerald-900 border border-emerald-300 block';
         resultDiv.innerText = data.message || `✅ Successfully connected to ${provider.toUpperCase()} Gateway!`;
       } else {
-        resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-rose-50 text-rose-900 border border-rose-300 block';
+        resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-rose-50 text-rose-900 border border-rose-300 block whitespace-pre-line';
         resultDiv.innerText = data.message || `❌ Validation failed. Please check credentials.`;
       }
     }
@@ -2089,28 +2114,32 @@ function toggleTelephonyConfigModal() {
 function onModalProviderChange(provider) {
   TELEPHONY_CONFIG.provider = provider;
   const exotelFields = document.getElementById('modalExotelFields');
+  const twilioFields = document.getElementById('modalTwilioFields');
   const webhookField = document.getElementById('modalWebhookField');
-  if (provider === 'webhook') {
-    if (exotelFields) exotelFields.classList.add('hidden');
-    if (webhookField) webhookField.classList.remove('hidden');
-  } else {
-    if (exotelFields) exotelFields.classList.remove('hidden');
-    if (webhookField) webhookField.classList.add('hidden');
-  }
+  
+  if (exotelFields) exotelFields.classList.toggle('hidden', provider !== 'exotel');
+  if (twilioFields) twilioFields.classList.toggle('hidden', provider !== 'twilio');
+  if (webhookField) webhookField.classList.toggle('hidden', provider !== 'webhook');
 }
 
 function saveTelephonyModalConfig() {
   const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
-  const sid = document.getElementById('modalExotelSid')?.value.trim() || '';
-  const token = document.getElementById('modalExotelToken')?.value.trim() || '';
-  const callerId = document.getElementById('modalExotelCallerId')?.value.trim() || '+91 80 4719 8800';
-  const webhookUrl = document.getElementById('modalWebhookUrl')?.value.trim() || '';
-
   TELEPHONY_CONFIG.provider = provider;
-  TELEPHONY_CONFIG.sid = sid;
-  TELEPHONY_CONFIG.token = token;
-  TELEPHONY_CONFIG.callerId = callerId;
-  TELEPHONY_CONFIG.webhookUrl = webhookUrl;
+
+  if (provider === 'exotel') {
+    TELEPHONY_CONFIG.sid = document.getElementById('modalExotelSid')?.value.trim() || '';
+    TELEPHONY_CONFIG.apiKey = document.getElementById('modalExotelApiKey')?.value.trim() || '';
+    TELEPHONY_CONFIG.token = document.getElementById('modalExotelToken')?.value.trim() || '';
+    TELEPHONY_CONFIG.callerId = document.getElementById('modalExotelCallerId')?.value.trim() || '08047198800';
+    TELEPHONY_CONFIG.agentPhone = document.getElementById('modalExotelAgentPhone')?.value.trim() || '+91 98703 47348';
+    TELEPHONY_CONFIG.subdomain = document.getElementById('modalExotelSubdomain')?.value || 'api.in.exotel.com';
+  } else if (provider === 'twilio') {
+    TELEPHONY_CONFIG.sid = document.getElementById('modalTwilioSid')?.value.trim() || '';
+    TELEPHONY_CONFIG.token = document.getElementById('modalTwilioToken')?.value.trim() || '';
+    TELEPHONY_CONFIG.callerId = document.getElementById('modalTwilioCallerId')?.value.trim() || '';
+  } else {
+    TELEPHONY_CONFIG.webhookUrl = document.getElementById('modalWebhookUrl')?.value.trim() || '';
+  }
 
   localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
   syncTelephonyConfigUI();
@@ -2338,7 +2367,7 @@ function playTelephoneRingTone() {
 
 // Outbound Telephony API Dispatcher (Bridge + Webhooks + Carrier)
 async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
-  const callerId = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
+  const callerId = TELEPHONY_CONFIG.callerId || '08047198800';
   const cleanPhone = phone.replace(/[^0-9]/g, '');
 
   // 1. Try Local Telephony Bridge (running on localhost:5000)
@@ -2351,7 +2380,10 @@ async function dispatchRealTelephonyCall(phone, langKey, langLabel) {
         callerId: callerId,
         provider: TELEPHONY_CONFIG.provider,
         sid: TELEPHONY_CONFIG.sid,
+        apiKey: TELEPHONY_CONFIG.apiKey,
         token: TELEPHONY_CONFIG.token,
+        agentPhone: TELEPHONY_CONFIG.agentPhone || '+91 98703 47348',
+        subdomain: TELEPHONY_CONFIG.subdomain || 'api.in.exotel.com',
         language: langLabel
       })
     });

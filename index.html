@@ -1625,19 +1625,66 @@
           </select>
         </div>
 
+        <!-- EXOTEL INDIA FIELDS -->
         <div id="modalExotelFields" class="space-y-3">
           <div>
-            <label class="block text-slate-700 font-bold mb-1">Account SID / API Key</label>
-            <input type="text" id="modalExotelSid" placeholder="e.g. bodhischoolofyoga or ACxxxxxxxx..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-700 font-bold">1. Exotel Account SID (Account Handle)</label>
+              <span class="text-[10px] text-slate-500 font-mono">my.exotel.com/<b>&lt;account_sid&gt;</b></span>
+            </div>
+            <input type="text" id="modalExotelSid" placeholder="e.g. bodhischoolofyoga" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <p class="text-[10px] text-slate-400 mt-1">Your Exotel account name from the top header or dashboard URL.</p>
           </div>
           <div>
-            <label class="block text-slate-700 font-bold mb-1">API Token / Auth Secret</label>
-            <input type="password" id="modalExotelToken" placeholder="e.g. 9f8a7b6c5d..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-700 font-bold">2. Exotel API Key</label>
+              <span class="text-[10px] text-slate-500">Settings ➔ API Settings</span>
+            </div>
+            <input type="text" id="modalExotelApiKey" placeholder="e.g. 4f9e1234abcd5678ef01..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <p class="text-[10px] text-slate-400 mt-1">The 32-character API Key from your Exotel dashboard.</p>
           </div>
           <div>
-            <label class="block text-slate-700 font-bold mb-1">Caller ID (Virtual DID / Landline)</label>
-            <input type="text" id="modalExotelCallerId" value="+91 80 4719 8800" placeholder="+91 80 4719 8800" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
-            <p class="text-[10px] text-slate-400 mt-1">This number will appear on the lead's mobile screen when the IVR dials.</p>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-700 font-bold">3. Exotel API Token</label>
+              <span class="text-[10px] text-slate-500">Settings ➔ API Settings</span>
+            </div>
+            <input type="password" id="modalExotelToken" placeholder="e.g. 9f8a7b6c5d4e3f2a1b..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <p class="text-[10px] text-slate-400 mt-1">The secret API Token from your Exotel dashboard.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-slate-700 font-bold mb-1">4. Virtual ExoPhone (Caller ID)</label>
+              <input type="text" id="modalExotelCallerId" value="08047198800" placeholder="08047198800" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+              <p class="text-[10px] text-slate-400 mt-0.5">Your Exotel virtual number.</p>
+            </div>
+            <div>
+              <label class="block text-slate-700 font-bold mb-1">5. Counselor Phone (To Bridge)</label>
+              <input type="text" id="modalExotelAgentPhone" value="+91 98703 47348" placeholder="+91 98703 47348" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+              <p class="text-[10px] text-slate-400 mt-0.5">Bodhi counselor phone to bridge with lead.</p>
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Cluster / Region Endpoint</label>
+            <select id="modalExotelSubdomain" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-medium text-xs">
+              <option value="api.in.exotel.com">India Cluster (api.in.exotel.com) — Standard for Indian accounts</option>
+              <option value="api.exotel.com">Singapore / Global Cluster (api.exotel.com)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- TWILIO VOICE FIELDS -->
+        <div id="modalTwilioFields" class="space-y-3 hidden">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Twilio Account SID</label>
+            <input type="text" id="modalTwilioSid" placeholder="e.g. ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Twilio Auth Token</label>
+            <input type="password" id="modalTwilioToken" placeholder="e.g. your_auth_token" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Twilio Virtual Phone Number</label>
+            <input type="text" id="modalTwilioCallerId" placeholder="+1234567890 or +91..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
           </div>
         </div>
 
