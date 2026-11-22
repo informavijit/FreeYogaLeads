@@ -1237,38 +1237,70 @@ function saveOutreachToLead() {
 // ============================================================================
 // MODULE 4: MINI CRM & PIPELINE MANAGEMENT
 // ============================================================================
+
+function getLeadTemperature(l) {
+  if (l.temperature) return l.temperature;
+  const text = ((l.notes || '') + ' ' + (l.offering || '') + ' ' + (l.status || '') + ' ' + (l.source || '')).toLowerCase();
+  if (l.status === 'Trial Booked' || l.status === 'Enrolled' || text.includes('yttc') || text.includes('certification') || text.includes('transfer') || text.includes('key 1') || text.includes('key 0')) {
+    return 'Hot';
+  }
+  if (l.status === 'Contacted' || text.includes('therapy') || text.includes('classes') || text.includes('whatsapp') || text.includes('corporate') || text.includes('key 2') || text.includes('key 9') || text.includes('key 3')) {
+    return 'Warm';
+  }
+  return 'Cold';
+}
+
 function renderCrmTable(filter = 'all') {
   const tbody = document.getElementById('crmTableBody');
   if (!tbody) return;
 
   let leads = STATE.leads;
-  if (filter !== 'all') {
+  if (filter === 'Hot' || filter === 'Warm' || filter === 'Cold') {
+    leads = leads.filter(l => getLeadTemperature(l) === filter);
+  } else if (filter !== 'all') {
     leads = leads.filter(l => l.status === filter);
   }
 
   // Update counts
   const cAll = STATE.leads.length;
+  const cHot = STATE.leads.filter(l => getLeadTemperature(l) === 'Hot').length;
+  const cWarm = STATE.leads.filter(l => getLeadTemperature(l) === 'Warm').length;
+  const cCold = STATE.leads.filter(l => getLeadTemperature(l) === 'Cold').length;
   const cNew = STATE.leads.filter(l => l.status === 'New').length;
   const cContacted = STATE.leads.filter(l => l.status === 'Contacted').length;
   const cTrial = STATE.leads.filter(l => l.status === 'Trial Booked').length;
   const cEnrolled = STATE.leads.filter(l => l.status === 'Enrolled').length;
 
   if (document.getElementById('countAll')) document.getElementById('countAll').innerText = cAll;
+  if (document.getElementById('countHot')) document.getElementById('countHot').innerText = cHot;
+  if (document.getElementById('countWarm')) document.getElementById('countWarm').innerText = cWarm;
+  if (document.getElementById('countCold')) document.getElementById('countCold').innerText = cCold;
   if (document.getElementById('countNew')) document.getElementById('countNew').innerText = cNew;
   if (document.getElementById('countContacted')) document.getElementById('countContacted').innerText = cContacted;
   if (document.getElementById('countTrial')) document.getElementById('countTrial').innerText = cTrial;
   if (document.getElementById('countEnrolled')) document.getElementById('countEnrolled').innerText = cEnrolled;
 
   if (leads.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">No leads in this stage. Extract leads from Directory or Social tabs above!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No leads in this stage. Extract leads from Directory, Social, or launch an IVR call above!</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = leads.map(l => `
+  tbody.innerHTML = leads.map(l => {
+    const temp = getLeadTemperature(l);
+    const tempBadge = temp === 'Hot'
+      ? `<span class="inline-flex items-center gap-1 text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-full"><i data-lucide="flame" class="w-3 h-3 text-rose-600"></i> Hot Lead</span>`
+      : temp === 'Warm'
+      ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full"><i data-lucide="sun" class="w-3 h-3 text-amber-600"></i> Warm Lead</span>`
+      : `<span class="inline-flex items-center gap-1 text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-0.5 rounded-full"><i data-lucide="snowflake" class="w-3 h-3 text-blue-400"></i> Cold Lead</span>`;
+
+    return `
     <tr class="hover:bg-slate-50 transition-colors">
       <td class="p-3">
         <div class="font-bold text-slate-900">${l.name}</div>
         <div class="text-[11px] text-slate-400">${l.date} • ${l.notes || 'No notes'}</div>
+      </td>
+      <td class="p-3">
+        ${tempBadge}
       </td>
       <td class="p-3">
         <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">${l.source}</span>
@@ -1293,7 +1325,7 @@ function renderCrmTable(filter = 'all') {
             </button>
           ` : ''}
           ${l.phone ? `
-            <button onclick="quickWhatsAppLead('${l.phone}', '${l.name}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md" title="Message on WhatsApp">
+            <button onclick="quickWhatsAppLead('${l.phone}', '${l.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md" title="Message on WhatsApp">
               <i data-lucide="message-circle" class="w-4 h-4"></i>
             </button>
           ` : ''}
@@ -1303,7 +1335,7 @@ function renderCrmTable(filter = 'all') {
         </div>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
 
   if (window.lucide) lucide.createIcons();
 }
@@ -1372,9 +1404,10 @@ function exportLeadsCsv() {
     return;
   }
 
-  const headers = ['Name', 'Category', 'Source', 'Offering', 'Contact', 'Phone', 'Status', 'Estimated Value', 'Notes', 'Date Added'];
+  const headers = ['Name', 'Temperature', 'Category', 'Source', 'Offering', 'Contact', 'Phone', 'Status', 'Estimated Value', 'Notes', 'Date Added'];
   const rows = STATE.leads.map(l => [
     `"${(l.name || '').replace(/"/g, '""')}"`,
+    `"${getLeadTemperature(l)}"`,
     `"${(l.category || '').replace(/"/g, '""')}"`,
     `"${(l.source || '').replace(/"/g, '""')}"`,
     `"${(l.offering || '').replace(/"/g, '""')}"`,
@@ -1915,6 +1948,7 @@ function startIvrCallSimulation() {
   IVR_STATE.activeCall = true;
   IVR_STATE.callStage = 'calling';
   IVR_STATE.callTimerSec = 0;
+  IVR_STATE.dtmfRecorded = false;
 
   const dot = document.getElementById('ivrCallStatusDot');
   const statusText = document.getElementById('ivrCallStatusText');
@@ -1967,6 +2001,12 @@ function startIvrCallSimulation() {
 
 function hangupIvrCallSimulation() {
   IVR_STATE.activeCall = false;
+
+  // If user hung up before pressing any key, record as Cold lead
+  if (!IVR_STATE.dtmfRecorded && (IVR_STATE.callStage === 'waiting_dtmf' || IVR_STATE.callStage === 'greeting')) {
+    recordIvrOutcomeToCrm('Call answered but hung up without key selection (Cold Lead)');
+  }
+
   IVR_STATE.callStage = 'ended';
 
   if (IVR_STATE.timerInterval) clearInterval(IVR_STATE.timerInterval);
@@ -1992,6 +2032,7 @@ function hangupIvrCallSimulation() {
 
 function pressDtmfKey(digit) {
   playDtmfTone(digit);
+  IVR_STATE.dtmfRecorded = true;
 
   if (!IVR_STATE.activeCall) {
     showToast(`DTMF Tone '${digit}' generated. Start call to test flow response!`);
@@ -2030,7 +2071,7 @@ function pressDtmfKey(digit) {
   statusText.innerText = `Key ${digit} Pressed - Responding`;
   livePrompt.innerText = `"${responseText}"`;
 
-  // Update lead in CRM with captured IVR outcome
+  // Update lead in CRM with captured IVR outcome & temperature
   recordIvrOutcomeToCrm(outcome);
 
   // Play audio response
@@ -2057,22 +2098,40 @@ function recordIvrOutcomeToCrm(outcome) {
   const phone = document.getElementById('ivrTargetPhone').value.trim();
   const name = document.getElementById('ivrTargetName').innerText;
 
-  let existing = STATE.leads.find(l => l.phone === phone || l.contact.includes(phone));
+  // Categorize Lead Temperature (Hot, Warm, Cold):
+  let temperature = 'Warm';
+  if (outcome.includes('Certification') || outcome.includes('Transfer') || outcome.includes('YTTC')) {
+    temperature = 'Hot';
+  } else if (outcome.includes('hung up') || outcome.includes('Unmapped') || outcome.includes('Cold')) {
+    temperature = 'Cold';
+  } else {
+    temperature = 'Warm';
+  }
+
+  const langLabel = IVR_STATE.scripts[IVR_STATE.currentLang]?.label || 'Indian Language';
+
+  let existing = STATE.leads.find(l => l.phone === phone || (l.contact && l.contact.includes(phone)));
   if (existing) {
-    existing.status = outcome.includes('Transfer') || outcome.includes('Certification') ? 'Trial Booked' : 'Contacted';
-    existing.notes = `IVR Interaction (${IVR_STATE.scripts[IVR_STATE.currentLang].label}): ${outcome}`;
+    existing.status = temperature === 'Hot' ? 'Trial Booked' : 'Contacted';
+    existing.temperature = temperature;
+    existing.notes = `IVR Interaction (${langLabel}): ${outcome}`;
+    if (temperature === 'Hot') {
+      existing.offering = 'Yoga Teacher Certification (YTTC)';
+      existing.value = '₹45,000';
+    }
   } else {
     STATE.leads.unshift({
       id: 'lead_' + Date.now(),
-      name: name || 'Indian IVR Lead',
+      name: name || `Lead (${phone})`,
       category: 'Inbound IVR Qualified',
-      source: `IVR Call (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`,
-      offering: outcome.includes('Certification') ? 'Yoga Certification (YTTC)' : 'Yoga Training',
+      source: `IVR Call (${langLabel})`,
+      offering: temperature === 'Hot' ? 'Yoga Teacher Certification (YTTC)' : 'Yoga Training',
       contact: phone,
       phone: phone,
-      status: 'Contacted',
-      value: outcome.includes('Certification') ? '₹45,000' : '₹5,000',
-      notes: outcome,
+      status: temperature === 'Hot' ? 'Trial Booked' : 'Contacted',
+      temperature: temperature,
+      value: temperature === 'Hot' ? '₹45,000' : '₹5,000',
+      notes: `IVR Response: ${outcome}`,
       date: new Date().toLocaleDateString()
     });
   }
@@ -2449,11 +2508,16 @@ function processNextBulkIvrCall() {
 }
 
 function saveBulkIvrLeadToCrm(res) {
+  // Determine Lead Temperature based on user keypress
+  const temperature = (res.dtmfKey === '1' || res.dtmfKey === '0') ? 'Hot' :
+                      (res.dtmfKey === '2' || res.dtmfKey === '9' || res.dtmfKey === '3') ? 'Warm' : 'Cold';
+
   // Check if lead already exists
   let existing = STATE.leads.find(l => l.phone === res.phone || (l.contact && l.contact.includes(res.phone)));
   
   if (existing) {
     existing.status = res.crmStatus;
+    existing.temperature = temperature;
     existing.source = `IVR Campaign (${res.langName})`;
     existing.notes = `IVR Response: Selected ${res.langName}, pressed [${res.dtmfKey}] for ${res.intentLabel}. Synced at ${res.timestamp}`;
     existing.value = res.dealValue;
@@ -2468,6 +2532,7 @@ function saveBulkIvrLeadToCrm(res) {
       phone: res.phone,
       email: '',
       status: res.crmStatus,
+      temperature: temperature,
       value: res.dealValue,
       notes: `IVR Response: Selected ${res.langName}, pressed Key ${res.dtmfKey} (${res.intentLabel})`,
       date: new Date().toLocaleDateString()
