@@ -238,6 +238,7 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                                     self.wfile.write(json.dumps({
                                         "valid": True,
                                         "carrier": f"Exotel India ({host})",
+                                        "verifiedSubdomain": host,
                                         "message": f"✅ Exotel Account '{url_sid}' verified on {host}!\nCredentials are valid and active for outbound IVR calling."
                                     }).encode('utf-8'))
                                     return
@@ -437,27 +438,44 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                         last_code = he.code
                         last_error = he.read().decode('utf-8')
                         print(f"   [Exotel Attempt Failed] Host: {host} | Auth: {desc} | Code: {he.code} | {last_error}")
-                        continue
+                        if he.code == 403 or 'KYC' in last_error or 'compliant' in last_error:
+                            # 403 Forbidden means Auth SUCCEEDED, but outbound cellular calls are blocked by Exotel account status (e.g. KYC not compliant)
+                            break
                     except Exception as ex:
                         last_error = str(ex)
                         print(f"   [Exotel Exception] Host: {host} | {ex}")
                         continue
+                if last_code == 403 or 'KYC' in last_error or 'compliant' in last_error:
+                    break
 
             # If all attempts failed, report friendly troubleshooting
             friendly_msg = f"Exotel API Error ({last_code}): {last_error}"
             try:
                 err_parsed = json.loads(last_error)
                 rest_ex = err_parsed.get('RestException', {})
-                if rest_ex.get('Code') == 34010:
+                msg_text = rest_ex.get('Message', '')
+                
+                if last_code == 403 or 'KYC' in msg_text or 'compliant' in msg_text or 'KYC' in last_error:
+                    friendly_msg = (
+                        "⚠️ Exotel Error (403 Forbidden - KYC Required):\n\n"
+                        f"\"{msg_text or 'Your account is not yet KYC compliant. This is mandatory before making outbound calls.'}\"\n\n"
+                        "Your Account SID, API Key, and Token are 100% verified and working!\n\n"
+                        "However, under Indian telecom regulations (TRAI/DoT), Exotel requires a one-time business KYC verification in your Exotel dashboard (my.exotel.com) before real cellular phone calls can ring Indian handsets.\n\n"
+                        "📱 Instant Solution (Zero Waiting):\n"
+                        "Click the green '📱 Direct Dial (SIM)' button in the IVR dialer to call this lead directly from your phone/device right now without waiting for KYC approval!"
+                    )
+                elif rest_ex.get('Code') == 34010:
                     friendly_msg = (
                         "Exotel Error 34010 (Invalid Auth Key/Token).\n\n"
                         "How to resolve in Gateway Settings:\n"
-                        "1. Account SID: Your account name from your Exotel dashboard URL (e.g. bodhischoolofyoga).\n"
+                        "1. Account SID: Your account name from your Exotel dashboard URL (e.g. self6777).\n"
                         "2. API Key: The 32-character key from Settings > API Settings.\n"
                         "3. API Token: The API Token from Settings > API Settings.\n"
-                        "4. Cluster: Select 'India Cluster (api.in.exotel.com)'.\n\n"
+                        "4. Cluster: Select 'Singapore / Global (api.exotel.com)'.\n\n"
                         "Tip: You can also click '📱 Direct Dial (SIM)' to call this number right now from your phone with 0 API keys!"
                     )
+                elif msg_text:
+                    friendly_msg = f"Exotel Error ({last_code}): {msg_text}"
             except Exception:
                 pass
 

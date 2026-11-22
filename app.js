@@ -2198,6 +2198,14 @@ async function testTelephonyGatewayConnection() {
     if (resultDiv) {
       resultDiv.classList.remove('hidden');
       if (data.valid) {
+        if (data.verifiedSubdomain) {
+          TELEPHONY_CONFIG.subdomain = data.verifiedSubdomain;
+          const inSub = document.getElementById('telephonySubdomainInput');
+          if (inSub) inSub.value = data.verifiedSubdomain;
+          const mSub = document.getElementById('modalExotelSubdomain');
+          if (mSub) mSub.value = data.verifiedSubdomain;
+          localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
+        }
         resultDiv.className = 'p-2.5 rounded-lg text-[11px] font-medium bg-emerald-50 text-emerald-900 border border-emerald-300 block';
         resultDiv.innerText = data.message || `✅ Successfully connected to ${provider.toUpperCase()} Gateway!`;
       } else {
@@ -2328,6 +2336,14 @@ async function testTelephonyInlineConnection() {
     if (resultDiv) {
       resultDiv.classList.remove('hidden');
       if (data.valid) {
+        if (data.verifiedSubdomain) {
+          TELEPHONY_CONFIG.subdomain = data.verifiedSubdomain;
+          const inSub = document.getElementById('telephonySubdomainInput');
+          if (inSub) inSub.value = data.verifiedSubdomain;
+          const mSub = document.getElementById('modalExotelSubdomain');
+          if (mSub) mSub.value = data.verifiedSubdomain;
+          localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
+        }
         resultDiv.className = 'md:col-span-3 p-2.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-900 border border-emerald-300 block';
         resultDiv.innerText = data.message || `✅ Successfully connected to ${provider.toUpperCase()} Gateway!`;
       } else {
