@@ -118,9 +118,9 @@
               <div class="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider mb-2">Client Engine (SPA)</div>
               <h3 class="text-base font-bold text-white mb-2">YogaLeadAI Core</h3>
               <ul class="text-xs text-slate-300 space-y-2">
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> State Machine & LocalStorage</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> CORS Proxy Fallback Handler</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Lead Scoring & Normalization</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Free-Text Search & Dropdown Overrides</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Regex Contact Extractor (Email/Phone)</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Browser Sandboxed LocalStorage</li>
                 <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Ad Budget ROI Simulator</li>
               </ul>
             </div>
@@ -131,12 +131,12 @@
           <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
             <div>
               <div class="text-[11px] font-mono text-purple-400 font-bold uppercase tracking-wider mb-2">Intelligence Layer</div>
-              <h3 class="text-base font-bold text-white mb-2">AI Pitch Architect</h3>
+              <h3 class="text-base font-bold text-white mb-2">AI Copilot & Pitch Architect</h3>
               <ul class="text-xs text-slate-400 space-y-2">
                 <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i> Google Gemini 1.5/2.0 API</li>
-                <li class="flex items-center gap-2"><i data-lucide="shield" class="w-3.5 h-3.5 text-purple-400"></i> Rule-Based Fallback Engine</li>
-                <li class="flex items-center gap-2"><i data-lucide="sliders" class="w-3.5 h-3.5 text-purple-400"></i> Tone & Offering Customizer</li>
-                <li class="flex items-center gap-2"><i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-400"></i> Multi-Format Generator</li>
+                <li class="flex items-center gap-2"><i data-lucide="bot" class="w-3.5 h-3.5 text-teal-400"></i> Interactive Copilot Chat Widget</li>
+                <li class="flex items-center gap-2"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-teal-400"></i> Automated Search Execution via Chat</li>
+                <li class="flex items-center gap-2"><i data-lucide="shield" class="w-3.5 h-3.5 text-purple-400"></i> Offline Heuristic Rule Engine</li>
               </ul>
             </div>
             <div class="pt-3 border-t border-slate-800 text-[10px] text-slate-500 font-mono">Google Free Tier (15 RPM)</div>
@@ -149,8 +149,8 @@
               <h3 class="text-base font-bold text-white mb-2">Conversion Hub</h3>
               <ul class="text-xs text-slate-400 space-y-2">
                 <li class="flex items-center gap-2"><i data-lucide="send" class="w-3.5 h-3.5 text-emerald-400"></i> 1-Click WhatsApp DeepLink</li>
+                <li class="flex items-center gap-2"><i data-lucide="message-circle" class="w-3.5 h-3.5 text-amber-400"></i> 1-Click Reddit DM Direct Links</li>
                 <li class="flex items-center gap-2"><i data-lucide="mail" class="w-3.5 h-3.5 text-blue-400"></i> Native Mailto Cold Emailer</li>
-                <li class="flex items-center gap-2"><i data-lucide="kanban" class="w-3.5 h-3.5 text-amber-400"></i> Pipeline Status Management</li>
                 <li class="flex items-center gap-2"><i data-lucide="download" class="w-3.5 h-3.5 text-slate-300"></i> CSV Export to Sheets/Excel</li>
               </ul>
             </div>
@@ -362,12 +362,33 @@
 
         <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Client-Side Privacy Boundary
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Client-Side Privacy Boundary & LocalStorage
           </h4>
           <p class="text-xs text-slate-400 leading-relaxed">
             Unlike third-party CRMs that store student phone numbers on remote servers, all phone numbers, scraped records, 
             and Gemini API keys stay exclusively inside the user's browser <code>localStorage</code>. No telemetry or data leakage.
           </p>
+        </div>
+
+        <!-- Security Threat Model: Never Hardcode API Keys -->
+        <div class="bg-slate-950 p-5 rounded-xl border border-rose-900/40 col-span-1 md:col-span-2 space-y-3">
+          <h4 class="text-sm font-bold text-rose-400 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i> Critical Security Architecture: Why Keys Must Never Be Hardcoded
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-400 leading-relaxed">
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+              <span class="font-bold text-white block mb-1">1. Client-Side Inspect (F12)</span>
+              GitHub Pages is a static server. Any key written in <code>app.js</code> is sent in plain text to the visitor's browser and can be read via Developer Tools (Sources/Network tab).
+            </div>
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+              <span class="font-bold text-white block mb-1">2. Private Repo ≠ Private Site</span>
+              While your GitHub repository may be private, GitHub Pages delivers web bundles across a public CDN. Private Pages require GitHub Enterprise.
+            </div>
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+              <span class="font-bold text-white block mb-1">3. Automated Secret Scanning</span>
+              Committing a live Google API key triggers GitHub & Google Secret Scanning, which automatically disables/revokes the key. Storing it in <code>localStorage</code> avoids all risk.
+            </div>
+          </div>
         </div>
       </div>
     </section>
