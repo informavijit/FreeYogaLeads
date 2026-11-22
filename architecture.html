@@ -266,12 +266,13 @@
 
         <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
           <h4 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-2">
-            <i data-lucide="phone-call" class="w-4 h-4"></i> Indian IVR Audio Engine
+            <i data-lucide="phone-call" class="w-4 h-4"></i> Indian IVR & Telephony Engine
           </h4>
           <ul class="text-xs text-slate-300 space-y-2">
+            <li><strong>Dual-Path Calling:</strong> "Place Real Outbound IVR Call" (Cloud Gateway / PRI Trunk) & "Test Audio" (Browser TTS).</li>
             <li><strong>Web Audio Dual-Tone:</strong> Real DTMF dual-frequency sine generation (697–941Hz & 1209–1477Hz).</li>
-            <li><strong>7-Language TTS:</strong> Native SpeechSynthesis locales (Hindi, English, Telugu, Tamil, Kannada, Malayalam, Bengali).</li>
-            <li><strong>Cloud Telephony:</strong> Exotel REST connector, Twilio TwiML Voice XML & Webhooks.</li>
+            <li><strong>7-Language Voice:</strong> Native SpeechSynthesis locales (Hindi, English, Telugu, Tamil, Kannada, Malayalam, Bengali).</li>
+            <li><strong>Cloud Telephony Adapter:</strong> Exotel REST API, Twilio TwiML Voice XML, and Generic Webhooks (n8n/Zapier).</li>
           </ul>
         </div>
 
@@ -362,17 +363,31 @@
 
       </div>
 
-      <!-- Bulk Engine Mechanics -->
-      <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3 text-xs text-slate-300 leading-relaxed">
-        <h4 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
-          Dynamic Multi-Language Gateway (Keys 1 to 7) & Telephony Pipeline:
-        </h4>
-        <p>
-          When an outbound campaign to 50+ Indian phone numbers is launched, the IVR begins with the <strong>Multi-Language Audio Gateway</strong>:
-          <code class="text-rose-400 font-sans block bg-slate-900 p-2.5 rounded my-2">"For English press 1, हिंदी के लिए 2 दबाएं, తెలుగు కోసం 3 నొక్కండి, தமிழுக்கு 4, ಕನ್ನಡಕ್ಕಾಗಿ 5, മലയാളത്തിനായി 6, বাংলার জন্য 7"</code>
-          Upon DTMF capture of digit 1–7, the call state machine branches into that language's qualification questions. Every prospect's responses are recorded in real-time and synchronized directly with the browser's <code>localStorage</code> Lead CRM database.
-        </p>
+      <!-- Bulk Engine & Dual-Path Telephony Architecture -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3 text-xs text-slate-300 leading-relaxed">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="phone-outgoing" class="w-4 h-4 text-rose-400"></i>
+            Dual-Path Call Execution Pipeline:
+          </h4>
+          <ul class="space-y-2 list-disc pl-4 text-slate-300">
+            <li><strong>Path A: "Place Real Outbound IVR Call":</strong> Initiates outbound calling to target <code>+91</code> mobile/landlines via Exotel REST API / PRI SIP Trunk or Instant Cloud Dispatch. Renders telecom handshake, delivers multi-lingual menu, logs call SID, and syncs response to CRM.</li>
+            <li><strong>Path B: "Test Audio (Browser TTS)":</strong> Runs client-side audio rendering using Web SpeechSynthesis Utterances and Web Audio API DTMF oscillators for testing without consuming telecom credits.</li>
+            <li><strong>1-Click CRM/Directory Calling:</strong> Deep-links directly from lead cards with number auto-population and dialer focus.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3 text-xs text-slate-300 leading-relaxed">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+            Bulk 50+ Numbers Multi-Language Gateway (Keys 1 to 7):
+          </h4>
+          <p>
+            When an outbound campaign to 50+ Indian phone numbers is launched, the IVR begins with the <strong>Multi-Language Audio Gateway</strong>:
+            <code class="text-rose-400 font-sans block bg-slate-900 p-2 rounded my-1.5 text-[11px]">"For English press 1, हिंदी के लिए 2 दबाएं, తెలుగు కోసం 3 నొక్కండి, தமிழுக்கு 4, ಕನ್ನಡಕ್ಕಾಗಿ 5, മലയാളത്തിനായി 6, বাংলার জন্য 7"</code>
+            Upon DTMF capture of digit 1–7, the call branches into that language's qualification questions. Every prospect's responses are recorded in real-time and synchronized with the Lead CRM.
+          </p>
+        </div>
       </div>
     </section>
 

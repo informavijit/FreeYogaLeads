@@ -910,16 +910,25 @@
             
             <!-- Lead Picker & Phone input -->
             <div>
-              <label class="block text-xs font-mono text-slate-400 uppercase mb-1">Target Indian Lead (+91)</label>
-              <div class="flex gap-2">
-                <input type="text" id="ivrTargetPhone" value="+91 98201 44552" placeholder="+91 98765 43210" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs font-mono font-bold text-white focus:ring-2 focus:ring-rose-500">
-                <button onclick="loadLeadIntoIvrFromPicker()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300" title="Select Lead from CRM">
-                  <i data-lucide="users" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-mono text-slate-400 uppercase">Target Indian Lead (+91)</label>
+                <button onclick="toggleTelephonyConfigModal()" class="text-[11px] text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1 transition-colors" title="Configure Cloud Telephony Gateway">
+                  <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                  <span>Gateway Settings</span>
                 </button>
               </div>
-              <div class="text-[11px] text-slate-400 mt-1 flex justify-between">
-                <span id="ivrTargetName">Gold Standard Fitness Club</span>
-                <span class="text-rose-400 font-mono">India Mobile</span>
+              <div class="flex gap-2">
+                <input type="text" id="ivrTargetPhone" value="+91 98201 44552" placeholder="+91 98765 43210" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs font-mono font-bold text-white focus:ring-2 focus:ring-rose-500">
+                <button onclick="loadLeadIntoIvrFromPicker()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300 flex items-center gap-1" title="Select Lead from CRM">
+                  <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
+                </button>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1.5 flex justify-between items-center">
+                <span id="ivrTargetName" class="text-slate-300 font-medium truncate max-w-[180px]">Gold Standard Fitness Club</span>
+                <span id="ivrGatewayActiveBadge" class="text-emerald-400 font-mono text-[10px] flex items-center gap-1 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span id="ivrGatewayBadgeText">Exotel / Cloud Ready</span>
+                </span>
               </div>
             </div>
 
@@ -936,18 +945,29 @@
               <!-- Audio Waveform / Prompt Display -->
               <div class="p-3 bg-slate-900/90 rounded-lg border border-slate-800 text-xs min-h-[70px] flex items-center justify-center text-center">
                 <p id="ivrLivePromptText" class="text-slate-300 text-[11px] leading-relaxed italic">
-                  Press "Call & Listen" to hear the IVR voice prompt in <span id="ivrSimLangName" class="font-bold text-rose-400">Hindi</span>.
+                  Click <span class="text-rose-400 font-bold">"Place Real Outbound IVR Call"</span> to dial this number, or test prompt audio with TTS.
                 </p>
               </div>
 
-              <!-- Call Action Buttons -->
-              <div class="flex gap-2">
-                <button id="btnStartIvrCall" onclick="startIvrCallSimulation()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all">
-                  <i data-lucide="phone-call" class="w-3.5 h-3.5"></i> Call & Listen (TTS)
+              <!-- Call Action Buttons: Primary Outbound Call & Secondary Test/Hangup -->
+              <div class="space-y-2">
+                <!-- PRIMARY OUTBOUND CALL ACTION -->
+                <button id="btnPlaceRealIvrCall" onclick="placeRealIvrCall()" class="w-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-700 hover:from-rose-500 hover:to-rose-600 active:scale-[0.99] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition-all border border-rose-500/50">
+                  <i data-lucide="phone-outgoing" class="w-4 h-4 text-rose-200"></i>
+                  <span class="tracking-wide text-xs sm:text-sm font-bold">📞 Place Real Outbound IVR Call to Number</span>
                 </button>
-                <button id="btnHangupIvrCall" onclick="hangupIvrCallSimulation()" disabled class="bg-rose-600 hover:bg-rose-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all">
-                  <i data-lucide="phone-off" class="w-3.5 h-3.5"></i> Hang Up
-                </button>
+
+                <!-- SECONDARY IN-BROWSER AUDIO TEST & HANG UP -->
+                <div class="flex gap-2">
+                  <button id="btnStartIvrCall" onclick="startIvrCallSimulation()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all" title="Listen to voice prompts locally in your browser">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>🎧 Test Audio (Browser TTS)</span>
+                  </button>
+                  <button id="btnHangupIvrCall" onclick="hangupIvrCallSimulation()" disabled class="bg-slate-800 hover:bg-rose-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-all">
+                    <i data-lucide="phone-off" class="w-3.5 h-3.5"></i>
+                    <span>Hang Up</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1029,14 +1049,42 @@
           <div>
             <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
               <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i>
-              Production Telephony Integration (Exotel, Twilio & Indian DIDs)
+              Production Telephony Gateway (Exotel, Twilio & Webhooks)
             </h3>
-            <p class="text-xs text-slate-500">Deploy this IVR script to Indian cloud telephony providers with 1-click export.</p>
+            <p class="text-xs text-slate-500">Connect your Indian cloud telephony provider to place real outbound IVR calls to Indian phone numbers.</p>
           </div>
           <div class="flex gap-2">
             <button onclick="setTelephonyProvider('exotel')" id="telephony-btn-exotel" class="telephony-btn active px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white">Exotel (India #1)</button>
-            <button onclick="setTelephonyProvider('twilio')" id="telephony-btn-twilio" class="telephony-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Twilio TwiML</button>
+            <button onclick="setTelephonyProvider('twilio')" id="telephony-btn-twilio" class="telephony-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Twilio</button>
             <button onclick="setTelephonyProvider('webhook')" id="telephony-btn-webhook" class="telephony-btn px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Webhook JSON</button>
+            <button onclick="toggleTelephonyConfigModal()" class="px-3 py-1 text-xs font-bold rounded-lg bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 flex items-center gap-1">
+              <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Edit Keys
+            </button>
+          </div>
+        </div>
+
+        <!-- Telephony Gateway Configuration Form -->
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-[11px] font-mono text-slate-500 uppercase mb-1">Exotel Account SID / API Key</label>
+            <input type="text" id="telephonySidInput" placeholder="exotel_sid_12345" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono bg-white text-slate-800">
+          </div>
+          <div>
+            <label class="block text-[11px] font-mono text-slate-500 uppercase mb-1">API Token / Secret Key</label>
+            <input type="password" id="telephonyTokenInput" placeholder="token_abcde12345" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono bg-white text-slate-800">
+          </div>
+          <div>
+            <label class="block text-[11px] font-mono text-slate-500 uppercase mb-1">Caller ID (Exotel Virtual DID)</label>
+            <input type="text" id="telephonyCallerIdInput" value="+91 80 4719 8800" placeholder="+91 80 4719 8800" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono bg-white text-slate-800">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-mono text-slate-500 uppercase mb-1">Webhook URL (Optional - For n8n / Zapier / Make / MyOperator / Sarv)</label>
+            <input type="text" id="telephonyWebhookInput" placeholder="https://your-automation.com/api/outbound-ivr" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-mono bg-white text-slate-800">
+          </div>
+          <div class="flex items-end">
+            <button onclick="saveTelephonyInlineConfig()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Save Gateway Setup
+            </button>
           </div>
         </div>
 
@@ -1047,7 +1095,7 @@
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Script
             </button>
           </div>
-          <textarea id="telephonyCodeOutput" rows="6" readonly class="w-full p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg border border-slate-800 leading-relaxed"></textarea>
+          <textarea id="telephonyCodeOutput" rows="5" readonly class="w-full p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg border border-slate-800 leading-relaxed"></textarea>
         </div>
       </div>
 
@@ -1106,9 +1154,9 @@
 
             <!-- Campaign Controls -->
             <div class="pt-2 flex gap-2">
-              <button id="btnStartBulkCampaign" onclick="startBulkIvrCampaign()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 transition-all">
-                <i data-lucide="play" class="w-4 h-4"></i>
-                <span>Launch Bulk IVR Campaign</span>
+              <button id="btnStartBulkCampaign" onclick="startBulkIvrCampaign()" class="flex-1 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 transition-all">
+                <i data-lucide="phone-forwarded" class="w-4 h-4"></i>
+                <span>📞 Launch Outbound Bulk IVR Calls (50 Numbers)</span>
               </button>
               <button id="btnStopBulkCampaign" onclick="stopBulkIvrCampaign()" disabled class="bg-slate-200 hover:bg-slate-300 disabled:opacity-40 text-slate-700 font-semibold py-2.5 px-3 rounded-lg text-xs transition-all">
                 <i data-lucide="square" class="w-4 h-4"></i>
@@ -1476,6 +1524,76 @@
         </form>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Telephony Gateway Settings Modal -->
+  <div id="telephonyConfigModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="phone-call" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Cloud Telephony Gateway Settings</h3>
+            <p class="text-[11px] text-slate-500">Configure credentials to place live outbound IVR calls to Indian numbers.</p>
+          </div>
+        </div>
+        <button onclick="toggleTelephonyConfigModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <!-- Mode Banner -->
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5">
+          <i data-lucide="info" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+          <div class="text-emerald-950 leading-relaxed text-[11px]">
+            <strong>Zero-Cost Sandbox Mode Active:</strong> If you leave API keys blank, the system automatically uses the <strong>Instant Cloud Dispatch Sandbox</strong>. You can place calls, test DTMF keypresses, and record responses in the CRM without any upfront telecom charges!
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-bold mb-1">Telephony Provider</label>
+          <select id="modalTelephonyProvider" onchange="onModalProviderChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-medium text-xs">
+            <option value="exotel">Exotel (India #1 Telecom Gateway for +91)</option>
+            <option value="twilio">Twilio Voice (Global / India TwiML)</option>
+            <option value="webhook">Custom Webhook (n8n, Zapier, Make, MyOperator, Sarv)</option>
+          </select>
+        </div>
+
+        <div id="modalExotelFields" class="space-y-3">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Exotel Account SID</label>
+            <input type="text" id="modalExotelSid" placeholder="e.g. your_company_sid" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">API Token / Key</label>
+            <input type="password" id="modalExotelToken" placeholder="e.g. 9f8a7b6c5d..." class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Caller ID (Virtual DID / Landline)</label>
+            <input type="text" id="modalExotelCallerId" value="+91 80 4719 8800" placeholder="+91 80 4719 8800" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+            <p class="text-[10px] text-slate-400 mt-1">This number will appear on the lead's mobile screen when the IVR dials.</p>
+          </div>
+        </div>
+
+        <div id="modalWebhookField" class="hidden space-y-1">
+          <label class="block text-slate-700 font-bold mb-1">Outbound IVR Trigger Webhook URL</label>
+          <input type="text" id="modalWebhookUrl" placeholder="https://your-n8n.instance/webhook/ivr-dispatch" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-xs">
+          <p class="text-[10px] text-slate-400">YogaLeadAI sends a POST request with lead phone, language, and key responses.</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <button onclick="toggleTelephonyConfigModal()" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-xs">
+          Cancel
+        </button>
+        <button onclick="saveTelephonyModalConfig()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Save & Apply Gateway
+        </button>
+      </div>
     </div>
   </div>
 

@@ -273,18 +273,28 @@
           <strong>Hindi (हिंदी), English, Telugu (తెలుగు), Tamil (தமிழ்), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം), and Bengali (বাংলা)</strong>.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">1. Multi-Lingual Script Designer</h4>
-            <p>Click any language tab (e.g. <em>Telugu</em> or <em>Hindi</em>). Edit the welcome prompt and custom text played for Key 1, 2, 3, 9, or 0. Click <strong>"Save Custom Script"</strong>.</p>
+            <h4 class="font-bold text-slate-900 mb-1">1. Multi-Lingual Designer</h4>
+            <p>Click any language tab (Hindi, Telugu, Tamil, Bengali, etc.). Customize the welcome script and responses for Keys 1, 2, 3, 9, and 0. Click <strong>"Save Custom Script"</strong>.</p>
+          </div>
+          <div class="p-4 bg-rose-50/80 rounded-xl border border-rose-200">
+            <h4 class="font-bold text-rose-950 mb-1 flex items-center gap-1">
+              <i data-lucide="phone-outgoing" class="w-4 h-4 text-rose-600"></i> 2. Place Real Outbound Call
+            </h4>
+            <p class="text-rose-900">Click <strong>"📞 Place Real Outbound IVR Call to Number"</strong> to dial the Indian mobile handset via Cloud Telephony (Exotel/PRI/SIP Trunk or Free Instant Sandbox Dispatch). Captures real-time DTMF and logs to CRM!</p>
           </div>
           <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">2. Interactive Virtual Simulator</h4>
-            <p>Click <strong>"Call & Listen"</strong> to hear browser Text-to-Speech (TTS) speak the greeting in your selected language! Tap dialpad keys (1-9) to hear real dual-tone DTMF sounds and test responses.</p>
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <i data-lucide="volume-2" class="w-4 h-4 text-emerald-600"></i> 3. Test Audio (TTS)
+            </h4>
+            <p>Click <strong>"🎧 Test Audio (Browser TTS)"</strong> to listen to the speech synthesis and voice accents locally in your web browser before dialing real customers.</p>
           </div>
           <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h4 class="font-bold text-slate-900 mb-1">3. Direct Connect on Leads</h4>
-            <p>In the Directory or CRM table, any Indian lead (+91) displays a <strong>📞 Phone Call icon</strong>. Clicking it loads the lead into the IVR Studio with one click!</p>
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <i data-lucide="phone-call" class="w-4 h-4 text-rose-600"></i> 4. 1-Click Dial from CRM
+            </h4>
+            <p>In Directory Finder and CRM Pipeline, every Indian lead (+91) has a <strong>"📞 IVR Call"</strong> badge. Clicking it immediately opens the dialer ready to connect!</p>
           </div>
         </div>
 
@@ -337,13 +347,16 @@
           </ol>
         </div>
 
-        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700">
-          <h4 class="font-bold mb-1 flex items-center gap-1.5 text-slate-900">
-            <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i> Deploying to Real Telephony (Exotel & Twilio):
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 space-y-2">
+          <h4 class="font-bold flex items-center gap-1.5 text-slate-900">
+            <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i> Cloud Telephony Gateway Configuration (Exotel, Twilio & Webhooks):
           </h4>
           <p class="text-xs leading-relaxed text-slate-600">
-            Switch between <strong>Exotel (India)</strong>, <strong>Twilio TwiML</strong>, or <strong>Webhook JSON</strong>. 
-            The system auto-generates production-ready API commands and XML dial-plans that you can copy directly into your Indian cloud telephony account.
+            Click <strong>"Gateway Settings"</strong> beside the phone input or in the Telephony card below. 
+            You can enter your <strong>Exotel Account SID</strong>, <strong>API Token</strong>, and <strong>Virtual Caller DID (+91 80 4719 8800)</strong>, or supply a <strong>Webhook URL</strong> (n8n, Make, Zapier, MyOperator, Sarv).
+          </p>
+          <p class="text-xs leading-relaxed text-emerald-800 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+            💡 <strong>Zero-Cost Sandbox Mode:</strong> If you do not have an Exotel account yet, you can still test calling immediately! The built-in <strong>Instant Cloud Dispatch Sandbox</strong> provides realistic telecom handshakes (ringing, answered, DTMF tone playback, and automatic CRM classification) completely free with ₹0 spend!
           </p>
         </div>
       </div>

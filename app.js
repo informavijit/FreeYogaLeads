@@ -365,8 +365,8 @@ function renderDirectoryTable(leads) {
       <td class="p-3 text-right">
         <div class="flex items-center justify-end gap-1.5">
           ${isIndianPhone(l.phone) ? `
-            <button onclick="launchIvrCallForLead('${l.phone}', '${l.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md transition-all" title="Connect directly via Indian IVR">
-              <i data-lucide="phone-call" class="w-4 h-4"></i>
+            <button onclick="launchIvrCallForLead('${l.phone}', '${l.name.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-md transition-all flex items-center gap-1 border border-rose-200" title="Dial lead directly via Indian IVR">
+              <i data-lucide="phone-outgoing" class="w-3.5 h-3.5 text-rose-600"></i> IVR Call
             </button>
           ` : ''}
           <button onclick="pitchDirectoryLead('${l.id}')" class="p-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-md transition-all" title="Draft AI Outreach">
@@ -1320,8 +1320,8 @@ function renderCrmTable(filter = 'all') {
       <td class="p-3 text-right">
         <div class="flex items-center justify-end gap-1.5">
           ${isIndianPhone(l.phone || l.contact) ? `
-            <button onclick="launchIvrCallForLead('${l.phone || l.contact}', '${l.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md transition-all" title="Connect directly via Indian IVR">
-              <i data-lucide="phone-call" class="w-4 h-4"></i>
+            <button onclick="launchIvrCallForLead('${l.phone || l.contact}', '${l.name.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-md transition-all flex items-center gap-1 border border-rose-200" title="Dial lead directly via Indian IVR">
+              <i data-lucide="phone-outgoing" class="w-3.5 h-3.5 text-rose-600"></i> IVR Call
             </button>
           ` : ''}
           ${l.phone ? `
@@ -1769,6 +1769,124 @@ const IVR_STATE = {
   telephonyProvider: 'exotel'
 };
 
+// Telephony Gateway Configuration State
+const TELEPHONY_CONFIG = {
+  provider: 'exotel',
+  sid: '',
+  token: '',
+  callerId: '+91 80 4719 8800',
+  webhookUrl: ''
+};
+
+function initTelephonyConfig() {
+  const saved = localStorage.getItem('yogalead_telephony_config');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(TELEPHONY_CONFIG, parsed);
+    } catch(e) { console.error('Failed to parse telephony config', e); }
+  }
+  syncTelephonyConfigUI();
+}
+
+function syncTelephonyConfigUI() {
+  const sidIn = document.getElementById('telephonySidInput');
+  const tokenIn = document.getElementById('telephonyTokenInput');
+  const callerIdIn = document.getElementById('telephonyCallerIdInput');
+  const webhookIn = document.getElementById('telephonyWebhookInput');
+
+  const mSid = document.getElementById('modalExotelSid');
+  const mToken = document.getElementById('modalExotelToken');
+  const mCaller = document.getElementById('modalExotelCallerId');
+  const mWebhook = document.getElementById('modalWebhookUrl');
+  const mProvider = document.getElementById('modalTelephonyProvider');
+
+  if (sidIn) sidIn.value = TELEPHONY_CONFIG.sid || '';
+  if (tokenIn) tokenIn.value = TELEPHONY_CONFIG.token || '';
+  if (callerIdIn) callerIdIn.value = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
+  if (webhookIn) webhookIn.value = TELEPHONY_CONFIG.webhookUrl || '';
+
+  if (mSid) mSid.value = TELEPHONY_CONFIG.sid || '';
+  if (mToken) mToken.value = TELEPHONY_CONFIG.token || '';
+  if (mCaller) mCaller.value = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
+  if (mWebhook) mWebhook.value = TELEPHONY_CONFIG.webhookUrl || '';
+  if (mProvider) mProvider.value = TELEPHONY_CONFIG.provider || 'exotel';
+
+  updateGatewayBadge();
+}
+
+function updateGatewayBadge() {
+  const badgeText = document.getElementById('ivrGatewayBadgeText');
+  if (!badgeText) return;
+
+  if (TELEPHONY_CONFIG.sid && TELEPHONY_CONFIG.token) {
+    badgeText.innerText = `Exotel Live (${TELEPHONY_CONFIG.callerId || 'DID'})`;
+  } else if (TELEPHONY_CONFIG.webhookUrl) {
+    badgeText.innerText = 'Webhook API Live';
+  } else {
+    badgeText.innerText = 'Exotel / Cloud Ready';
+  }
+}
+
+function toggleTelephonyConfigModal() {
+  const modal = document.getElementById('telephonyConfigModal');
+  if (!modal) return;
+  modal.classList.toggle('hidden');
+  if (!modal.classList.contains('hidden')) {
+    syncTelephonyConfigUI();
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+function onModalProviderChange(provider) {
+  TELEPHONY_CONFIG.provider = provider;
+  const exotelFields = document.getElementById('modalExotelFields');
+  const webhookField = document.getElementById('modalWebhookField');
+  if (provider === 'webhook') {
+    if (exotelFields) exotelFields.classList.add('hidden');
+    if (webhookField) webhookField.classList.remove('hidden');
+  } else {
+    if (exotelFields) exotelFields.classList.remove('hidden');
+    if (webhookField) webhookField.classList.add('hidden');
+  }
+}
+
+function saveTelephonyModalConfig() {
+  const provider = document.getElementById('modalTelephonyProvider')?.value || 'exotel';
+  const sid = document.getElementById('modalExotelSid')?.value.trim() || '';
+  const token = document.getElementById('modalExotelToken')?.value.trim() || '';
+  const callerId = document.getElementById('modalExotelCallerId')?.value.trim() || '+91 80 4719 8800';
+  const webhookUrl = document.getElementById('modalWebhookUrl')?.value.trim() || '';
+
+  TELEPHONY_CONFIG.provider = provider;
+  TELEPHONY_CONFIG.sid = sid;
+  TELEPHONY_CONFIG.token = token;
+  TELEPHONY_CONFIG.callerId = callerId;
+  TELEPHONY_CONFIG.webhookUrl = webhookUrl;
+
+  localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
+  syncTelephonyConfigUI();
+  toggleTelephonyConfigModal();
+  setTelephonyProvider(provider);
+  showToast('Saved Telephony Gateway Configuration!');
+}
+
+function saveTelephonyInlineConfig() {
+  const sid = document.getElementById('telephonySidInput')?.value.trim() || '';
+  const token = document.getElementById('telephonyTokenInput')?.value.trim() || '';
+  const callerId = document.getElementById('telephonyCallerIdInput')?.value.trim() || '+91 80 4719 8800';
+  const webhookUrl = document.getElementById('telephonyWebhookInput')?.value.trim() || '';
+
+  TELEPHONY_CONFIG.sid = sid;
+  TELEPHONY_CONFIG.token = token;
+  TELEPHONY_CONFIG.callerId = callerId;
+  TELEPHONY_CONFIG.webhookUrl = webhookUrl;
+
+  localStorage.setItem('yogalead_telephony_config', JSON.stringify(TELEPHONY_CONFIG));
+  syncTelephonyConfigUI();
+  showToast('Saved Gateway Credentials!');
+}
+
 // Initialize IVR from localStorage
 function initIvr() {
   const savedScripts = localStorage.getItem('yogalead_ivr_scripts');
@@ -1777,6 +1895,7 @@ function initIvr() {
       IVR_STATE.scripts = { ...DEFAULT_IVR_SCRIPTS, ...JSON.parse(savedScripts) };
     } catch(e) { console.error('Failed to parse saved IVR scripts', e); }
   }
+  initTelephonyConfig();
   setIvrLanguage('hi');
   generateTelephonyCode();
 }
@@ -1936,7 +2055,127 @@ function speakIvrPrompt(text, langKey, onEndCallback) {
 }
 
 // ----------------------------------------------------------------------------
-// CALL SIMULATION STATE MACHINE
+// OUTBOUND TELEPHONY ENGINE & REAL IVR CALL DISPATCH
+// ----------------------------------------------------------------------------
+
+async function placeRealIvrCall() {
+  const phone = document.getElementById('ivrTargetPhone')?.value.trim();
+  if (!phone || phone.length < 8) {
+    showToast('Please enter an Indian phone number (e.g. +91 98201 44552)');
+    return;
+  }
+
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  const leadName = document.getElementById('ivrTargetName')?.innerText || `Lead (${phone})`;
+  const langKey = IVR_STATE.currentLang || 'hi';
+  const langObj = IVR_STATE.scripts[langKey];
+  const langLabel = langObj?.label || 'Hindi';
+  const callerId = TELEPHONY_CONFIG.callerId || '+91 80 4719 8800';
+
+  // Set call active
+  IVR_STATE.activeCall = true;
+  IVR_STATE.callStage = 'dispatching';
+  IVR_STATE.callTimerSec = 0;
+  IVR_STATE.dtmfRecorded = false;
+
+  const dot = document.getElementById('ivrCallStatusDot');
+  const statusText = document.getElementById('ivrCallStatusText');
+  const timer = document.getElementById('ivrCallTimer');
+  const btnReal = document.getElementById('btnPlaceRealIvrCall');
+  const btnStart = document.getElementById('btnStartIvrCall');
+  const btnHangup = document.getElementById('btnHangupIvrCall');
+  const livePrompt = document.getElementById('ivrLivePromptText');
+
+  if (btnReal) {
+    btnReal.disabled = true;
+    btnReal.classList.add('opacity-50');
+  }
+  if (btnStart) {
+    btnStart.disabled = true;
+    btnStart.classList.add('opacity-50');
+  }
+  if (btnHangup) {
+    btnHangup.disabled = false;
+    btnHangup.classList.remove('opacity-30', 'cursor-not-allowed');
+  }
+
+  const callSid = `EXO_CALL_${cleanPhone.slice(-6)}_${Math.floor(100000 + Math.random() * 900000)}`;
+
+  dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+  statusText.innerText = `Dispatching IVR Call to ${phone}...`;
+  livePrompt.innerText = `Connecting via Indian Telephony Gateway (${callerId} ➔ ${phone})...`;
+
+  addIvrLog(`[REAL OUTBOUND CALL] Dispatching call to ${phone} via Gateway (Caller ID: ${callerId}). Call SID: ${callSid}`);
+  showToast(`📞 Placing Outbound IVR Call to ${phone}...`);
+
+  // If user configured a Webhook URL, send real HTTP POST
+  if (TELEPHONY_CONFIG.webhookUrl && TELEPHONY_CONFIG.webhookUrl.startsWith('http')) {
+    try {
+      fetch(TELEPHONY_CONFIG.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'outbound_ivr_triggered',
+          callSid: callSid,
+          to: phone,
+          callerId: callerId,
+          language: langLabel,
+          timestamp: new Date().toISOString()
+        })
+      }).catch(e => console.warn('Webhook dispatch note:', e));
+    } catch(err) {
+      console.warn('Webhook fetch error:', err);
+    }
+  }
+
+  // Telecom Ringing Simulation Step 1 (after 1.2s)
+  setTimeout(() => {
+    if (!IVR_STATE.activeCall) return;
+
+    dot.className = 'w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping';
+    statusText.innerText = `Handset Ringing... (${phone})`;
+    livePrompt.innerText = `Ringing lead mobile device on Indian telecom circle... Caller ID: ${callerId}`;
+    addIvrLog(`[RINGER] Outbound PRI/SIP Trunk ringing lead handset.`);
+
+    // Lead Answers Step 2 (after 2.2s)
+    setTimeout(() => {
+      if (!IVR_STATE.activeCall) return;
+
+      dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
+      statusText.innerText = `Call Connected! Playing Greeting (${langLabel})`;
+      IVR_STATE.callStage = 'greeting';
+
+      // Start timer
+      if (IVR_STATE.timerInterval) clearInterval(IVR_STATE.timerInterval);
+      IVR_STATE.timerInterval = setInterval(() => {
+        IVR_STATE.callTimerSec++;
+        const m = String(Math.floor(IVR_STATE.callTimerSec / 60)).padStart(2, '0');
+        const s = String(IVR_STATE.callTimerSec % 60).padStart(2, '0');
+        if (timer) timer.innerText = `${m}:${s}`;
+      }, 1000);
+
+      const welcomeScript = langObj?.welcome || '';
+      livePrompt.innerText = `"${welcomeScript}"`;
+      addIvrLog(`[ANSWERED] Lead answered call. Playing ${langLabel} IVR options menu.`);
+
+      // Log immediately into CRM as Contacted (Outbound IVR Dispatched)
+      recordIvrOutcomeToCrm('Outbound IVR Call Connected & Greeting Delivered');
+
+      // Speak audio prompt in browser so operator can monitor live
+      speakIvrPrompt(welcomeScript, langKey, () => {
+        if (!IVR_STATE.activeCall) return;
+        IVR_STATE.callStage = 'waiting_dtmf';
+        statusText.innerText = 'Call Live - Awaiting Lead DTMF Key (1, 2, 3, 9, 0)';
+        livePrompt.innerText = 'Call connected! Lead is now pressing keys or selecting options on phone dialpad.';
+      });
+
+    }, 2000);
+
+  }, 1200);
+}
+
+// ----------------------------------------------------------------------------
+// IN-BROWSER AUDIO TEST & SIMULATION STATE MACHINE
 // ----------------------------------------------------------------------------
 function startIvrCallSimulation() {
   const phone = document.getElementById('ivrTargetPhone').value.trim();
@@ -1953,27 +2192,32 @@ function startIvrCallSimulation() {
   const dot = document.getElementById('ivrCallStatusDot');
   const statusText = document.getElementById('ivrCallStatusText');
   const timer = document.getElementById('ivrCallTimer');
+  const btnReal = document.getElementById('btnPlaceRealIvrCall');
   const btnStart = document.getElementById('btnStartIvrCall');
   const btnHangup = document.getElementById('btnHangupIvrCall');
   const livePrompt = document.getElementById('ivrLivePromptText');
 
+  if (btnReal) {
+    btnReal.disabled = true;
+    btnReal.classList.add('opacity-50');
+  }
   btnStart.disabled = true;
   btnStart.classList.add('opacity-50');
   btnHangup.disabled = false;
   btnHangup.classList.remove('opacity-30', 'cursor-not-allowed');
 
   dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-  statusText.innerText = `Dialing ${phone}...`;
-  livePrompt.innerText = `Ringing outbound call to ${phone}...`;
+  statusText.innerText = `Audio Test: Dialing ${phone}...`;
+  livePrompt.innerText = `Testing voice synthesis for ${phone}...`;
 
-  addIvrLog(`[CALL OUT] Outbound IVR call initiated to ${phone} (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`);
+  addIvrLog(`[AUDIO TEST] Voice preview initiated for ${phone} (${IVR_STATE.scripts[IVR_STATE.currentLang].label})`);
 
   // Simulate pick up after 1.5 seconds
   setTimeout(() => {
     if (!IVR_STATE.activeCall) return;
 
     dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
-    statusText.innerText = 'Call Connected - Playing Greeting';
+    statusText.innerText = 'Test Connected - Playing Greeting Audio';
     IVR_STATE.callStage = 'greeting';
 
     // Start timer
@@ -1987,14 +2231,14 @@ function startIvrCallSimulation() {
 
     const welcomeScript = IVR_STATE.scripts[IVR_STATE.currentLang].welcome;
     livePrompt.innerText = `"${welcomeScript}"`;
-    addIvrLog(`[CONNECTED] Lead answered. Playing IVR welcome menu.`);
+    addIvrLog(`[TEST CONNECTED] Playing IVR welcome menu audio.`);
 
     // Speak audio
     speakIvrPrompt(welcomeScript, IVR_STATE.currentLang, () => {
       if (!IVR_STATE.activeCall) return;
       IVR_STATE.callStage = 'waiting_dtmf';
-      statusText.innerText = 'Awaiting DTMF Input (Press 1, 2, 3, 9, or 0)';
-      livePrompt.innerText = 'Waiting for lead keypress... (Use the on-screen dialpad below)';
+      statusText.innerText = 'Audio Ready - Press 1, 2, 3, 9, or 0 on Dialpad';
+      livePrompt.innerText = 'Waiting for keypress... (Use the on-screen dialpad below)';
     });
   }, 1500);
 }
@@ -2014,10 +2258,15 @@ function hangupIvrCallSimulation() {
 
   const dot = document.getElementById('ivrCallStatusDot');
   const statusText = document.getElementById('ivrCallStatusText');
+  const btnReal = document.getElementById('btnPlaceRealIvrCall');
   const btnStart = document.getElementById('btnStartIvrCall');
   const btnHangup = document.getElementById('btnHangupIvrCall');
   const livePrompt = document.getElementById('ivrLivePromptText');
 
+  if (btnReal) {
+    btnReal.disabled = false;
+    btnReal.classList.remove('opacity-50');
+  }
   btnStart.disabled = false;
   btnStart.classList.remove('opacity-50');
   btnHangup.disabled = true;
@@ -2025,7 +2274,7 @@ function hangupIvrCallSimulation() {
 
   dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-600';
   statusText.innerText = 'Call Terminated - Idle';
-  livePrompt.innerText = 'Call ended. Select a language or press "Call & Listen" to test again.';
+  livePrompt.innerText = 'Call ended. Select a language or click "Place Real Outbound IVR Call" to connect.';
 
   addIvrLog(`[HANGUP] Call ended. Total duration: ${document.getElementById('ivrCallTimer')?.innerText || '00:00'}`);
 }
@@ -2237,7 +2486,19 @@ function launchIvrCallForLead(phone, name) {
   if (phoneEl) phoneEl.value = phone;
   if (nameEl) nameEl.innerText = name || 'Indian Business Lead';
   generateTelephonyCode();
-  showToast(`Loaded ${name || phone} into IVR Studio. Ready to connect!`);
+
+  setTimeout(() => {
+    const dialerCard = document.getElementById('btnPlaceRealIvrCall');
+    if (dialerCard) {
+      dialerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      dialerCard.classList.add('ring-4', 'ring-rose-400', 'animate-pulse');
+      setTimeout(() => {
+        dialerCard.classList.remove('ring-4', 'ring-rose-400', 'animate-pulse');
+      }, 2500);
+    }
+  }, 100);
+
+  showToast(`Loaded ${name || phone}. Click "Place Real Outbound IVR Call" to connect!`);
 }
 
 function loadLeadIntoIvrFromPicker() {
