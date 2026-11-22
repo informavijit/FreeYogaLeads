@@ -1693,9 +1693,9 @@ const DEFAULT_IVR_SCRIPTS = {
   hi: {
     langCode: 'hi-IN',
     label: 'हिंदी (Hindi)',
-    welcome: 'नमस्ते! बोधि स्कूल ऑफ योग में आपका स्वागत है। योग शिक्षक प्रमाणन यानी Yoga Alliance USA टीचर ट्रेनिंग कोर्स के लिए 1 दबाएं। व्यक्तिगत ऑनलाइन योग क्लास और बैक पेन थेरेपी के लिए 2 दबाएं। कॉर्पोरेट योग और जिम पार्टनरशिप के लिए 3 दबाएं। व्हाट्सएप पर पूरा सिलेबस तुरंत पाने के लिए 9 दबाएं। हमारे योग काउंसलर से सीधे बात करने के लिए 0 दबाएं।',
+    welcome: 'नमस्ते! बोधि स्कूल ऑफ योग में आपका स्वागत है। योग शिक्षक प्रमाणन यानी Yoga Alliance USA टीचर ट्रेनिंग कोर्स के लिए 1 दबाएं। व्यक्तिगत ऑनलाइन लाइव योग क्लास के लिए 2 दबाएं। कॉर्पोरेट योग और जिम पार्टनरशिप के लिए 3 दबाएं। व्हाट्सएप पर पूरा सिलेबस तुरंत पाने के लिए 9 दबाएं। हमारे योग काउंसलर से सीधे बात करने के लिए 0 दबाएं।',
     key1: 'आपने योग शिक्षक प्रमाणन को चुना है। हमारा कोर्स Yoga Alliance USA द्वारा मान्यता प्राप्त है और वीकेंड्स पर लाइव चलता है। कोर्स फीस और सिलेबस की पूरी जानकारी आपके व्हाट्सएप पर भेज दी गई है।',
-    key2: 'आपने व्यक्तिगत ऑनलाइन योग क्लास को चुना है। पीठ दर्द, वजन घटाने और तनाव मुक्ति के लिए हमारे सीनियर शिक्षक लाइव गाइड करते हैं। 30 मिनट की फ्री ट्रायल क्लास का लिंक आपके व्हाट्सएप पर भेज दिया गया है।',
+    key2: 'आपने व्यक्तिगत ऑनलाइन योग क्लास को चुना है। समग्र स्वास्थ्य, वजन घटाने और तनाव मुक्ति के लिए हमारे सीनियर शिक्षक लाइव गाइड करते हैं। 30 मिनट की फ्री ट्रायल क्लास का लिंक आपके व्हाट्सएप पर भेज दिया गया है।',
     key3: 'आपने कॉर्पोरेट वेलनेस और पार्टनरशिप को चुना है। हमारी पार्टनरशिप टीम शीघ्र ही आपसे संपर्क करेगी।',
     key9: 'धन्यवाद! संपूर्ण विवरण आपके व्हाट्सएप पर भेज दिया गया है। आपका दिन शुभ हो, नमस्ते!',
     key0: 'आपकी कॉल हमारे सीनियर योग काउंसलर को ट्रांसफर की जा रही है, कृपया लाइन पर बने रहें।'
@@ -1703,9 +1703,9 @@ const DEFAULT_IVR_SCRIPTS = {
   en: {
     langCode: 'en-IN',
     label: 'English',
-    welcome: 'Namaste and welcome to Bodhi School of Yoga! To explore Yoga Alliance USA Teacher Training and Certification, press 1. For personalized online yoga classes and back pain therapy, press 2. For corporate wellness and gym partnerships, press 3. To receive our full syllabus on WhatsApp immediately, press 9. To speak to a counselor, press 0.',
+    welcome: 'Namaste and welcome to Bodhi School of Yoga! To explore Yoga Alliance USA Teacher Training and Certification, press 1. For personalized online yoga classes and wellness, press 2. For corporate wellness and gym partnerships, press 3. To receive our full syllabus on WhatsApp immediately, press 9. To speak to a counselor, press 0.',
     key1: 'You have selected Yoga Teacher Training Certification. Our Yoga Alliance USA accredited batches run on weekends with live Rishikesh gurus. We are texting you the fee details and curriculum right now on your WhatsApp number.',
-    key2: 'You have selected Online Personal Yoga Therapy. Our senior doctors design custom alignment routines for posture and stress. A free 30-minute trial session link is being sent to your WhatsApp.',
+    key2: 'You have selected Online Personal Yoga Classes. Our senior instructors design custom alignment routines for posture, flexibility, and stress relief. A free 30-minute trial session link is being sent to your WhatsApp.',
     key3: 'You have selected Corporate Wellness & Partnerships. We conduct ergonomics and mindfulness workshops with zero setup required. Our partnerships manager will connect with you shortly.',
     key9: 'Thank you! Our complete brochure, schedule, and fee breakdown have been dispatched to your WhatsApp number. Namaste!',
     key0: 'Connecting your call to a senior yoga counselor. Please stay on the line.'
@@ -1713,7 +1713,7 @@ const DEFAULT_IVR_SCRIPTS = {
   te: {
     langCode: 'te-IN',
     label: 'తెలుగు (Telugu)',
-    welcome: 'నమస్కారం! బోధి స్కూల్ ఆఫ్ యోగాకి స్వాగతం. యోగా అలయన్స్ USA గుర్తింపు పొందిన యోగా టీచర్ ట్రైనింగ్ సర్టిఫికేషన్ కోసం 1 నొక్కండి. పర్సనల్ ఆన్‌లైన్ యోగా క్లాసులు మరియు నడుము నొప్పి థెరపీ కోసం 2 నొక్కండి. కార్పొరేట్ యోగా మరియు భాగస్వామ్యాల కోసం 3 నొక్కండి. పూర్తి సిలబస్ వాట్సాప్‌లో పొందడానికి 9 నొక్కండి. నేరుగా మాట్లాడటానికి 0 నొక్కండి.',
+    welcome: 'నమస్కారం! బోధి స్కూల్ ఆఫ్ యోగాకి స్వాగతం. యోగా అలయన్స్ USA గుర్తింపు పొందిన యోగా టీచర్ ట్రైనింగ్ సర్టిఫికేషన్ కోసం 1 నొక్కండి. పర్సనల్ ఆన్‌లైన్ యోగా క్లాసుల కోసం 2 నొక్కండి. కార్పొరేట్ యోగా మరియు భాగస్వామ్యాల కోసం 3 నొక్కండి. పూర్తి సిలబస్ వాట్సాప్‌లో పొందడానికి 9 నొక్కండి. నేరుగా మాట్లాడటానికి 0 నొక్కండి.',
     key1: 'మీరు యోగా టీచర్ సర్టిఫికేషన్‌ను ఎంచుకున్నారు. పూర్తి సిలబస్ మరియు ఫీజు వివరాలు మీ వాట్సాప్‌కు పంపబడ్డాయి.',
     key2: 'మీరు ఆన్‌లైన్ పర్సనల్ యోగా క్లాసులను ఎంచుకున్నారు. ఉచిత ట్రయల్ క్లాస్ లింక్ మీ వాట్సాప్‌కు పంపబడింది.',
     key3: 'కార్పొరేట్ వెల్‌నెస్ వివరాల కోసం మా మేనేజర్ మిమ్మల్ని సంప్రదిస్తారు.',
@@ -1723,7 +1723,7 @@ const DEFAULT_IVR_SCRIPTS = {
   ta: {
     langCode: 'ta-IN',
     label: 'தமிழ் (Tamil)',
-    welcome: 'வணக்கம்! போதி ஸ்கூல் ஆஃப் யோகாவுக்கு உங்களை அன்புடன் வரவேற்கிறோம். யோகா ஆசிரியர் சான்றிதழ் பயிற்சிக்கு 1-ஐ அழுத்தவும். தனிப்பயனாக்கப்பட்ட ஆன்லைன் யோகா வகுப்புகள் மற்றும் முதுகுவலி சிகிச்சைக்கு 2-ஐ அழுத்தவும். கார்ப்பரேட் யோகா மற்றும் ஜிம் பார்ட்னர்ஷிப்பிற்கு 3-ஐ அழுத்தவும். வாட்ஸ்அப்பில் முழு பாடத்திட்டத்தைப் பெற 9-ஐ அழுத்தவும். ஆலோசகருடன் பேச 0-ஐ அழுத்தவும்.',
+    welcome: 'வணக்கம்! போதி ஸ்கூல் ஆஃப் யோகாவுக்கு உங்களை அன்புடன் வரவேற்கிறோம். யோகா ஆசிரியர் சான்றிதழ் பயிற்சிக்கு 1-ஐ அழுத்தவும். தனிப்பயனாக்கப்பட்ட ஆன்லைன் யோகா வகுப்புகளுக்கு 2-ஐ அழுத்தவும். கார்ப்பரேட் யோகா மற்றும் ஜிம் பார்ட்னர்ஷிப்பிற்கு 3-ஐ அழுத்தவும். வாட்ஸ்அப்பில் முழு பாடத்திட்டத்தைப் பெற 9-ஐ அழுத்தவும். ஆலோசகருடன் பேச 0-ஐ அழுத்தவும்.',
     key1: 'யோகா ஆசிரியர் பயிற்சியைத் தேர்ந்தெடுத்துள்ளீர்கள். சர்வதேச சான்றிதழ் பாடத்திட்டம் மற்றும் கட்டண விவரங்கள் உங்கள் வாட்ஸ்அப்பிற்கு அனுப்பப்பட்டுள்ளன.',
     key2: 'ஆன்லைன் யோகா வகுப்புகளைத் தேர்ந்தெடுத்துள்ளீர்கள். 30 நிமிட இலவச சோதனை வகுப்பு இணைப்பு உங்கள் வாட்ஸ்அப்பிற்கு அனுப்பப்பட்டுள்ளது.',
     key3: 'கார்ப்பரேட் பயிற்சி விவரங்களுக்கு எங்கள் குழு விரைவில் உங்களைத் தொடர்பு கொள்ளும்.',
@@ -1733,7 +1733,7 @@ const DEFAULT_IVR_SCRIPTS = {
   kn: {
     langCode: 'kn-IN',
     label: 'ಕನ್ನಡ (Kannada)',
-    welcome: 'ನಮಸ್ಕಾರ! ಬೋಧಿ ಸ್ಕೂಲ್ ಆಫ್ ಯೋಗಕ್ಕೆ ಸ್ವಾಗತ. ಯೋಗ ಅಲಯನ್ಸ್ ಯುಎಸ್ಎ ಮಾನ್ಯತೆ ಪಡೆದ ಯೋಗ ಶಿಕ್ಷಕರ ತರಬೇತಿಗಾಗಿ 1 ಒತ್ತಿರಿ. ಆನ್‌ಲೈನ್ ವೈಯಕ್ತಿಕ ಯೋಗ ತರಗತಿಗಳು ಮತ್ತು ಬೆನ್ನುನೋವಿನ ಚಿಕಿತ್ಸೆಗಾಗಿ 2 ಒತ್ತಿರಿ. ಕಾರ್ಪೊರೇಟ್ ಯೋಗಕ್ಕಾಗಿ 3 ಒತ್ತಿರಿ. ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸಂಪೂರ್ಣ ಸಿಲಬಸ್ ಪಡೆಯಲು 9 ಒತ್ತಿರಿ. ನೇರವಾಗಿ ಮಾತನಾಡಲು 0 ಒತ್ತಿರಿ.',
+    welcome: 'ನಮಸ್ಕಾರ! ಬೋಧಿ ಸ್ಕೂಲ್ ಆಫ್ ಯೋಗಕ್ಕೆ ಸ್ವಾಗತ. ಯೋಗ ಅಲಯನ್ಸ್ ಯುಎಸ್ಎ ಮಾನ್ಯತೆ ಪಡೆದ ಯೋಗ ಶಿಕ್ಷಕರ ತರಬೇತಿಗಾಗಿ 1 ಒತ್ತಿರಿ. ಆನ್‌ಲೈನ್ ವೈಯಕ್ತಿಕ ಯೋಗ ತರಗತಿಗಳಿಗಾಗಿ 2 ಒತ್ತಿರಿ. ಕಾರ್ಪೊರೇಟ್ ಯೋಗಕ್ಕಾಗಿ 3 ಒತ್ತಿರಿ. ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸಂಪೂರ್ಣ ಸಿಲಬಸ್ ಪಡೆಯಲು 9 ಒತ್ತಿರಿ. ನೇರವಾಗಿ ಮಾತನಾಡಲು 0 ಒತ್ತಿರಿ.',
     key1: 'ನೀವು ಯೋಗ ಶಿಕ್ಷಕರ ಸರ್ಟಿಫಿಕೇಶನ್ ಆಯ್ಕೆ ಮಾಡಿದ್ದೀರಿ. ಸಂಪೂರ್ಣ ಕೋರ್ಸ್ ವಿವರಗಳನ್ನು ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.',
     key2: 'ವೈಯಕ್ತಿಕ ಯೋಗ ತರಗತಿಗಳ ಉಚಿತ ಟ್ರಯಲ್ ಲಿಂಕ್ ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ತಲುಪಿದೆ.',
     key3: 'ಕಾರ್ಪೊರೇಟ್ ಯೋಗಕ್ಕಾಗಿ ನಮ್ಮ ಮ್ಯಾನೇಜರ್ ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲಿದ್ದಾರೆ.',
@@ -1743,7 +1743,7 @@ const DEFAULT_IVR_SCRIPTS = {
   ml: {
     langCode: 'ml-IN',
     label: 'മലയാളം (Malayalam)',
-    welcome: 'നമസ്കാരം! ബോധി സ്കൂൾ ഓഫ് യോഗയിലേക്ക് സ്വാഗതം. അന്താരാഷ്ട്ര യോഗ ടീച്ചർ ട്രെയിനിംഗ് സർട്ടിഫിക്കേഷനായി 1 അമർത്തുക. ഓൺലൈൻ പേഴ്സണൽ യോഗ ക്ലാസുകൾക്കും നടുവേദന തെറാപ്പിക്കുമായി 2 അമർത്തുക. കോർപ്പറേറ്റ് വെൽനസ് പ്രോഗ്രാമുകൾക്കായി 3 അമർത്തുക. മുഴുവൻ സിലബസും വാട്സ്ആപ്പിൽ ലഭിക്കാൻ 9 അമർത്തുക. കൗൺസിലറുമായി സംസാരിക്കാൻ 0 അമർത്തുക.',
+    welcome: 'നമസ്കാരം! ബോധി സ്കൂൾ ഓഫ് യോഗയിലേക്ക് സ്വാഗതം. അന്താരാഷ്ട്ര യോഗ ടീച്ചർ ട്രെയിനിംഗ് സർട്ടിഫിക്കേഷനായി 1 അമർത്തുക. ഓൺലൈൻ പേഴ്സണൽ യോഗ ക്ലാസുകൾക്കായി 2 അമർത്തുക. കോർപ്പറേറ്റ് വെൽനസ് പ്രോഗ്രാമുകൾക്കായി 3 അമർത്തുക. മുഴുവൻ സിലബസും വാട്സ്ആപ്പിൽ ലഭിക്കാൻ 9 അമർത്തുക. കൗൺസിലറുമായി സംസാരിക്കാൻ 0 അമർത്തുക.',
     key1: 'യോഗ ടീച്ചർ സർട്ടിഫിക്കേഷൻ തിരഞ്ഞെടുത്തതിന് നന്ദി. വിശദമായ വിവരങ്ങൾ നിങ്ങളുടെ വാട്സ്ആപ്പിലേക്ക് അയച്ചിട്ടുണ്ട്.',
     key2: 'ഓൺലൈൻ യോഗ ക്ലാസുകളുടെ സൗജന്യ ട്രയൽ ലിങ്ക് വാട്സ്ആപ്പിൽ അയച്ചിട്ടുണ്ട്.',
     key3: 'കോർപ്പറേറ്റ് വെൽനസ് ടീം ഉടൻ നിങ്ങളെ ബന്ധപ്പെടുന്നതാണ്.',
@@ -1753,7 +1753,7 @@ const DEFAULT_IVR_SCRIPTS = {
   bn: {
     langCode: 'bn-IN',
     label: 'বাংলা (Bengali)',
-    welcome: 'নমস্কার! বোধি স্কুল অফ যোগায় আপনাকে স্বাগতম। যোগ শিক্ষক সার্টিফিকেশন অর্থাৎ যোগা অ্যালায়েন্স ইউএসএ টিচার ট্রেনিং কোর্সের জন্য 1 টিপুন। ব্যক্তিগত অনলাইন যোগ ক্লাস এবং পিঠের ব্যথার থেরাপির জন্য 2 টিপুন। কর্পোরেট যোগা ও জিম পার্টনারশিপের জন্য 3 টিপুন। হোয়াটসঅ্যাপে সম্পূর্ণ সিলেবাস পেতে 9 টিপুন। আমাদের যোগ বিশেষজ্ঞের সাথে কথা বলতে 0 টিপুন।',
+    welcome: 'নমস্কার! বোধি স্কুল অফ যোগায় আপনাকে স্বাগতম। যোগ শিক্ষক সার্টিফিকেশন অর্থাৎ যোগা অ্যালায়েন্স ইউএসএ টিচার ট্রেনিং কোর্সের জন্য 1 টিপুন। ব্যক্তিগত অনলাইন লাইভ যোগ ক্লাসের জন্য 2 টিপুন। কর্পোরেট যোগা ও জিম পার্টনারশিপের জন্য 3 টিপুন। হোয়াটসঅ্যাপে সম্পূর্ণ সিলেবাস পেতে 9 টিপুন। আমাদের যোগ বিশেষজ্ঞের সাথে কথা বলতে 0 টিপুন।',
     key1: 'আপনি যোগ শিক্ষক সার্টিফিকেশন বেছে নিয়েছেন। ঋষিকেশের লাইভ ক্লাসের সময়সূচী এবং ফি-র বিবরণ আপনার হোয়াটসঅ্যাপে পাঠানো হয়েছে।',
     key2: 'আপনি অনলাইন ব্যক্তিগত যোগা বেছে নিয়েছেন। ৩০ মিনিটের ফ্রি ট্রায়াল ক্লাসের লিঙ্ক আপনার হোয়াটসঅ্যাপে পাঠানো হয়েছে।',
     key3: 'কর্পোরেট ওয়েলনেস তথ্যের জন্য আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।',
@@ -1901,9 +1901,9 @@ function initIvr() {
   if (savedScripts) {
     try {
       const parsed = JSON.parse(savedScripts);
-      // Auto-migrate old brand names if present in cached localStorage
+      // Auto-migrate old brand names or deprecated backpain text if present in cached localStorage
       const hasOldBrand = Object.values(parsed).some(s =>
-        s && s.welcome && (s.welcome.includes('प्राणवेद') || s.welcome.includes('PranaVeda') || s.welcome.includes('பிராணவேதா') || s.welcome.includes('ಪ್ರಾಣವೇದ') || s.welcome.includes('പ്രാണവേദ') || s.welcome.includes('প্রাণবেদ') || s.welcome.includes('ప్రాణవేద'))
+        s && s.welcome && (s.welcome.includes('प्राणवेद') || s.welcome.includes('PranaVeda') || s.welcome.includes('बैक पेन') || s.welcome.includes('back pain') || s.welcome.includes('నడుము నొప్పి') || s.welcome.includes('முதுகுவலி') || s.welcome.includes('ಬೆನ್ನುನೋವಿನ') || s.welcome.includes('നടുവേദന') || s.welcome.includes('পিঠের ব্যথার'))
       );
       if (hasOldBrand) {
         IVR_STATE.scripts = JSON.parse(JSON.stringify(DEFAULT_IVR_SCRIPTS));
@@ -2702,7 +2702,7 @@ Digits:
         greetingAudioText: s.welcome,
         menuActions: {
           "1": { offering: "Yoga Teacher Training", responseAudio: s.key1 },
-          "2": { offering: "Online Yoga Therapy", responseAudio: s.key2 },
+          "2": { offering: "Personal Online Yoga Classes", responseAudio: s.key2 },
           "3": { offering: "Corporate Wellness", responseAudio: s.key3 },
           "9": { action: "whatsapp_syllabus_dispatch", responseAudio: s.key9 },
           "0": { action: "live_transfer_agent", transferNumber: "+919870347348" }
@@ -2948,7 +2948,7 @@ async function processNextBulkIvrCall() {
     BULK_CAMPAIGN_STATE.stats.yttc++;
   } else if (intentRand < 0.75) {
     dtmfKey = '2';
-    intentLabel = 'Online Yoga Therapy / Back Pain';
+    intentLabel = 'Online Personal Yoga Classes / Wellness';
     crmStatus = 'Trial Booked';
     dealValue = '₹5,000/mo';
   } else if (intentRand < 0.90) {
