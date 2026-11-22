@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YogaLeadAI - Detailed System Architecture Blueprint</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
+          <i data-lucide="layers" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-xl text-white">YogaLead<span class="text-emerald-400">AI</span></span>
+            <span class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Architecture Blueprint v1.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Technical specification & zero-cost serverless architecture</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-slate-950 px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+
+    <!-- HERO SUMMARY -->
+    <section class="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 p-8 rounded-2xl border border-slate-800 shadow-2xl relative overflow-hidden">
+      <div class="relative z-10 max-w-4xl space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono">
+          <i data-lucide="cpu" class="w-3.5 h-3.5"></i> High-Throughput / Zero-Cost Operational Model
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">System Architecture & Technical Blueprint</h1>
+        <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+          This architecture combines <strong>B2B Directory Harvesting</strong> (inspired by <code class="text-emerald-400">gosom/Google-Maps-Scraper</code>) 
+          and <strong>Public Intent Stream Mining</strong> (inspired by <code class="text-emerald-400">Kappaemme-git/codex-first-customer-finder-skill</code>) 
+          into a zero-server-cost, privacy-first single page application (SPA) capable of systematically replacing a <strong>₹50,000/day paid ad spend</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 1: SYSTEM TOPOLOGY & COMPONENT DIAGRAM -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="network" class="w-6 h-6 text-emerald-400"></i>
+          1. High-Level System Topology
+        </h2>
+        <p class="text-sm text-slate-400">End-to-end data pipeline from lead discovery to WhatsApp delivery.</p>
+      </div>
+
+      <!-- VISUAL ARCHITECTURE FLOW -->
+      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+          
+          <!-- Layer 1 -->
+          <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider mb-2">Ingestion Layer</div>
+              <h3 class="text-base font-bold text-white mb-2">Data Sources</h3>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i> OpenStreetMap / Overpass API</li>
+                <li class="flex items-center gap-2"><i data-lucide="radio" class="w-3.5 h-3.5 text-amber-400"></i> Reddit Search Public JSON</li>
+                <li class="flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-blue-400"></i> CSV/JSON Gosom Scraper Files</li>
+                <li class="flex items-center gap-2"><i data-lucide="terminal" class="w-3.5 h-3.5 text-purple-400"></i> Python Companion Scraper</li>
+              </ul>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[10px] text-slate-500 font-mono">100% Free / No Paywalls</div>
+          </div>
+
+          <!-- Layer 2 -->
+          <div class="bg-slate-900/90 p-5 rounded-xl border border-emerald-500/30 flex flex-col justify-between space-y-4 shadow-lg shadow-emerald-950/50">
+            <div>
+              <div class="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider mb-2">Client Engine (SPA)</div>
+              <h3 class="text-base font-bold text-white mb-2">YogaLeadAI Core</h3>
+              <ul class="text-xs text-slate-300 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> State Machine & LocalStorage</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> CORS Proxy Fallback Handler</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Lead Scoring & Normalization</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Ad Budget ROI Simulator</li>
+              </ul>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[10px] text-emerald-400 font-mono">GitHub Pages Host ($0)</div>
+          </div>
+
+          <!-- Layer 3 -->
+          <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="text-[11px] font-mono text-purple-400 font-bold uppercase tracking-wider mb-2">Intelligence Layer</div>
+              <h3 class="text-base font-bold text-white mb-2">AI Pitch Architect</h3>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i> Google Gemini 1.5/2.0 API</li>
+                <li class="flex items-center gap-2"><i data-lucide="shield" class="w-3.5 h-3.5 text-purple-400"></i> Rule-Based Fallback Engine</li>
+                <li class="flex items-center gap-2"><i data-lucide="sliders" class="w-3.5 h-3.5 text-purple-400"></i> Tone & Offering Customizer</li>
+                <li class="flex items-center gap-2"><i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-400"></i> Multi-Format Generator</li>
+              </ul>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[10px] text-slate-500 font-mono">Google Free Tier (15 RPM)</div>
+          </div>
+
+          <!-- Layer 4 -->
+          <div class="bg-slate-900/90 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="text-[11px] font-mono text-blue-400 font-bold uppercase tracking-wider mb-2">Delivery & CRM</div>
+              <h3 class="text-base font-bold text-white mb-2">Conversion Hub</h3>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="send" class="w-3.5 h-3.5 text-emerald-400"></i> 1-Click WhatsApp DeepLink</li>
+                <li class="flex items-center gap-2"><i data-lucide="mail" class="w-3.5 h-3.5 text-blue-400"></i> Native Mailto Cold Emailer</li>
+                <li class="flex items-center gap-2"><i data-lucide="kanban" class="w-3.5 h-3.5 text-amber-400"></i> Pipeline Status Management</li>
+                <li class="flex items-center gap-2"><i data-lucide="download" class="w-3.5 h-3.5 text-slate-300"></i> CSV Export to Sheets/Excel</li>
+              </ul>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[10px] text-slate-500 font-mono">Direct Browser Actions</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: THE TWO REPOSITORIES INTEGRATION -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="git-branch" class="w-6 h-6 text-emerald-400"></i>
+          2. Repository Integration Analysis
+        </h2>
+        <p class="text-sm text-slate-400">How gosom/Google-Maps-Scraper and Kappaemme-git/codex-first-customer-finder are adapted.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Repo 1 Adaption -->
+        <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">gosom/Google-Maps-Scraper</span>
+            <span class="text-xs text-slate-500">B2B Directory Mining</span>
+          </div>
+          <h3 class="text-lg font-bold text-white">Application to the Yoga Startup</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            While regular retail consumers searching for yoga classes do not register businesses on Google Maps, 
+            <strong>Gyms, Crossfit Boxes, Fitness Studios, and Corporate HRs do</strong>.
+          </p>
+          <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-xs space-y-2">
+            <div class="text-slate-300 font-bold">Key Target Mechanics:</div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-400">
+              <li><strong>Target:</strong> 1,000+ gyms in Tier 1 Indian cities + international hubs (Dubai, London).</li>
+              <li><strong>The Hook:</strong> Upsell their personal trainers to become <em>Certified Yoga Alliance Instructors</em> (YTTC 200hr), allowing the gym/trainer to charge higher hourly rates.</li>
+              <li><strong>Web App Implementation:</strong> Directly queries Overpass API (OpenStreetMap) without API keys, and includes a drag-and-drop CSV/JSON parser to import bulk outputs from Gosom's local scraper.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Repo 2 Adaption -->
+        <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">codex-first-customer-finder</span>
+            <span class="text-xs text-slate-500">Public Intent Stream Mining</span>
+          </div>
+          <h3 class="text-lg font-bold text-white">Application to the Yoga Startup</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Codex customer finder searches public discussions to discover evidence of active pain points. 
+            People constantly express purchase intent on Reddit, Twitter, and niche health forums.
+          </p>
+          <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 text-xs space-y-2">
+            <div class="text-slate-300 font-bold">Key Target Mechanics:</div>
+            <ul class="list-disc pl-4 space-y-1 text-slate-400">
+              <li><strong>Keywords:</strong> <code>"yoga teacher training online"</code>, <code>"200hr certification cost"</code>, <code>"yoga trainer for lower back pain"</code>.</li>
+              <li><strong>The Hook:</strong> High-ticket certification seekers abroad (US, UK, Europe) where local courses cost $2,500–$3,500. An Indian Yoga Alliance school charging $500–$800 is an irresistible bargain.</li>
+              <li><strong>Web App Implementation:</strong> Live Reddit API listener + AI contextual response generator that crafts high-empathy, non-spammy replies.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 3: TECHNICAL STACK & DATA SCHEMAS -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="code-2" class="w-6 h-6 text-emerald-400"></i>
+          3. Technical Stack & State Specification
+        </h2>
+        <p class="text-sm text-slate-400">Lightweight, modern components ensuring zero-latency execution.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+          <h4 class="text-sm font-bold text-emerald-400 mb-3 flex items-center gap-2">
+            <i data-lucide="layout" class="w-4 h-4"></i> Frontend Core
+          </h4>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li><strong>HTML5 / Tailwind CSS:</strong> Dynamic utility-first layout with zero bundling overhead.</li>
+            <li><strong>Vanilla JS (ES6+):</strong> Native event-driven reactive state pattern without React/Vue framework bloat.</li>
+            <li><strong>Lucide Icons:</strong> Modern SVG iconography loaded asynchronously via unpkg CDN.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+          <h4 class="text-sm font-bold text-purple-400 mb-3 flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4"></i> Storage & Persistence
+          </h4>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li><strong>localStorage:</strong> 100% private, browser-sandboxed database for CRM leads and API configurations.</li>
+            <li><strong>Data Export:</strong> Native client-side Blob generator for UTF-8 encoded RFC-4180 CSV files.</li>
+            <li><strong>Zero Server Storage:</strong> Eliminates GDPR/data protection compliance overhead.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+          <h4 class="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2">
+            <i data-lucide="bot" class="w-4 h-4"></i> AI & API Bridges
+          </h4>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li><strong>Google Gemini REST:</strong> Direct HTTP POST to <code>v1beta/models/gemini-1.5-flash</code> with structured JSON schema.</li>
+            <li><strong>Overpass API:</strong> OpenStreetMap global spatial query engine.</li>
+            <li><strong>Reddit JSON API:</strong> Public subreddit query engine with CORS proxy fallback.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- JSON STATE SCHEMA PREVIEW -->
+      <div class="bg-slate-950 p-5 rounded-xl border border-slate-800">
+        <h4 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">Primary Lead Object Schema (TypeScript Representation)</h4>
+        <pre class="bg-slate-900 p-4 rounded-lg text-emerald-300 text-xs overflow-x-auto"><code>interface LeadRecord {
+  id: string;               // Unique ID: 'lead_' + timestamp
+  name: string;             // Prospect or Business Name
+  category: string;         // 'Gym / Fitness Center' | 'Community Prospect'
+  source: string;           // 'Google Maps' | 'Reddit (r/yoga)'
+  offering: string;         // 'Yoga Certification (YTTC)' | 'B2C Personal Training'
+  contact: string;          // Direct phone number, email, or discussion permalink
+  phone?: string;           // Normalized international phone number
+  status: LeadStatus;       // 'New' | 'Contacted' | 'Trial Booked' | 'Enrolled' | 'Inactive'
+  value: string;            // Estimated deal size: '₹45,000' | '$550' | '₹4,000/mo'
+  notes: string;            // Contextual angle, pain points, or previous interactions
+  date: string;             // ISO formatted creation date
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 4: AD SPEND REDUCTION ECONOMICS -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="trending-down" class="w-6 h-6 text-emerald-400"></i>
+          4. Economics of Replacing the ₹50,000/Day Ad Spend
+        </h2>
+        <p class="text-sm text-slate-400">Unit economics and mathematical justification for budget taper.</p>
+      </div>
+
+      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-900 text-slate-400 uppercase font-mono border-b border-slate-800">
+            <tr>
+              <th class="p-3">Phase</th>
+              <th class="p-3">Daily Ad Spend</th>
+              <th class="p-3">Organic Leads Generated</th>
+              <th class="p-3">Monthly Cash Saved</th>
+              <th class="p-3">Strategic Operational Focus</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 font-medium">
+            <tr>
+              <td class="p-3 font-bold text-white">Baseline (Current)</td>
+              <td class="p-3 text-rose-400 font-bold">₹50,000 / day</td>
+              <td class="p-3">0 leads (100% ad reliant)</td>
+              <td class="p-3">₹0</td>
+              <td class="p-3 text-slate-400">High CAC, ad fatigue, high churn.</td>
+            </tr>
+            <tr class="bg-emerald-950/20">
+              <td class="p-3 font-bold text-emerald-400">Phase 1 (Week 1)</td>
+              <td class="p-3 font-bold">₹35,000 / day</td>
+              <td class="p-3 font-bold text-emerald-400">15–20 leads / day</td>
+              <td class="p-3 text-emerald-400 font-bold">₹4,50,000 / month</td>
+              <td class="p-3">Plug lead leaks with WhatsApp instant booking; begin B2B gym outreach.</td>
+            </tr>
+            <tr class="bg-emerald-950/40">
+              <td class="p-3 font-bold text-emerald-400">Phase 2 (Weeks 2–3)</td>
+              <td class="p-3 font-bold">₹20,000 / day</td>
+              <td class="p-3 font-bold text-emerald-400">35–50 leads / day</td>
+              <td class="p-3 text-emerald-400 font-bold">₹9,00,000 / month</td>
+              <td class="p-3">Reddit social intent listening; enroll international certification students ($500+).</td>
+            </tr>
+            <tr class="bg-emerald-900/30">
+              <td class="p-3 font-bold text-emerald-300">Phase 3 (Steady State)</td>
+              <td class="p-3 font-bold text-emerald-300">₹15,000 / day</td>
+              <td class="p-3 font-bold text-emerald-300">50+ leads / day</td>
+              <td class="p-3 text-emerald-300 font-extrabold text-sm">₹10,50,000 / month</td>
+              <td class="p-3">Paid ads act solely as retargeting; organic engine generates majority of leads.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 5: DEPLOYMENT INSTRUCTIONS -->
+    <section class="space-y-4">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="cloud" class="w-6 h-6 text-emerald-400"></i>
+          5. Deployment & Security Architecture
+        </h2>
+        <p class="text-sm text-slate-400">Zero infrastructure maintenance and strict client-side data isolation.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="github" class="w-4 h-4 text-emerald-400"></i> GitHub Pages Deployment
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The application is completely static. When pushed to GitHub and configured with Pages from the <code>main</code> branch, 
+            GitHub serves the static assets over their global Fastly CDN with automated SSL certificates at zero monthly cost.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Client-Side Privacy Boundary
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Unlike third-party CRMs that store student phone numbers on remote servers, all phone numbers, scraped records, 
+            and Gemini API keys stay exclusively inside the user's browser <code>localStorage</code>. No telemetry or data leakage.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <span>YogaLeadAI Engineering Architecture Blueprint</span>
+      <span>Live Local Server: <a href="http://localhost:3000" class="text-emerald-400 hover:underline">http://localhost:3000</a></span>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
