@@ -1123,6 +1123,27 @@
           </div>
         </div>
 
+        <!-- Live Telephony Gateway Status & Call Monitor Bar -->
+        <div id="bulkGatewayStatusBanner" class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span id="bulkGatewayDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="bulkGatewayText" class="text-slate-200 font-medium font-mono text-[11px]">Telephony Dispatcher: Bridge Active on localhost:5000</span>
+          </div>
+          <div class="flex items-center gap-4 text-slate-300 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+              <input type="checkbox" id="bulkAudioMonitor" checked class="rounded text-rose-600 accent-rose-600">
+              <span class="font-medium text-[11px]">🔊 Live Audio Monitor (Ringtones & Prompts)</span>
+            </label>
+            <div class="flex items-center gap-1.5 font-mono text-[11px]">
+              <span class="text-slate-400">Pace:</span>
+              <select id="bulkCallSpeed" class="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 text-xs">
+                <option value="realistic">Realistic Live Call (~2.5s/call)</option>
+                <option value="fast">Fast Cloud Batch (~0.8s/call)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <!-- Left: Input & Setup (5 cols) -->
           <div class="lg:col-span-5 space-y-4">

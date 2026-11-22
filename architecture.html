@@ -371,8 +371,9 @@
             Dual-Path Call Execution Pipeline:
           </h4>
           <ul class="space-y-2 list-disc pl-4 text-slate-300">
-            <li><strong>Path A: "Place Real Outbound IVR Call":</strong> Initiates outbound calling to target <code>+91</code> mobile/landlines via Exotel REST API / PRI SIP Trunk or Instant Cloud Dispatch. Renders telecom handshake, delivers multi-lingual menu, logs call SID, and syncs response to CRM.</li>
+            <li><strong>Path A: "Place Real Outbound IVR Call":</strong> Initiates outbound calling to target <code>+91</code> mobile/landlines via Exotel REST API / PRI SIP Trunk or the local <code>telephony_bridge.py</code> on <code>http://localhost:5000</code>. Renders telecom handshake, delivers multi-lingual menu, logs call SID, and syncs response to CRM.</li>
             <li><strong>Path B: "Test Audio (Browser TTS)":</strong> Runs client-side audio rendering using Web SpeechSynthesis Utterances and Web Audio API DTMF oscillators for testing without consuming telecom credits.</li>
+            <li><strong>Local Telephony Bridge:</strong> Zero-dependency Python server (<code>telephony_bridge.py</code>) running on port 5000 that bridges browser requests directly to Exotel, Twilio, and Indian PRI SIP trunks with CORS support.</li>
             <li><strong>1-Click CRM/Directory Calling:</strong> Deep-links directly from lead cards with number auto-population and dialer focus.</li>
           </ul>
         </div>
