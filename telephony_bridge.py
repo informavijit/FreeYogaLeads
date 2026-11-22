@@ -390,62 +390,92 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
             if alt_host not in hosts_to_try:
                 hosts_to_try.append(alt_host)
 
-            from_num = f"0{clean_agent}" if (clean_agent and not clean_agent.startswith('0')) else (clean_agent or f"0{clean_to}")
-            to_num = f"0{clean_to}" if not clean_to.startswith('0') else clean_to
+            clean_agent_10 = clean_agent[-10:] if len(clean_agent) >= 10 else clean_agent
+            clean_to_10 = clean_to[-10:] if len(clean_to) >= 10 else clean_to
+            clean_caller_digits = ''.join(c for c in caller_id if c.isdigit())
+            if clean_caller_digits.startswith('91') and len(clean_caller_digits) == 12:
+                caller_10 = clean_caller_digits[2:]
+            elif clean_caller_digits.startswith('0') and len(clean_caller_digits) == 11:
+                caller_10 = clean_caller_digits[1:]
+            else:
+                caller_10 = clean_caller_digits
+
+            caller_id_variants = [
+                caller_id.strip(),
+                f"0{caller_10}" if not caller_10.startswith('0') else caller_10,
+                f"+91{caller_10}",
+                caller_10
+            ]
+            seen_c = set()
+            unique_callers = [c for c in caller_id_variants if not (c in seen_c or seen_c.add(c))]
+
+            # Phone number formatting combinations to try (10-digit, E.164, 0-prefixed)
+            number_pair_variants = [
+                (clean_agent_10, clean_to_10, "10-digit standard"),
+                (f"+91{clean_agent_10}", f"+91{clean_to_10}", "E.164 format"),
+                (f"0{clean_agent_10}", f"0{clean_to_10}", "0-prefixed format"),
+            ]
 
             last_error = ""
             last_code = 401
+            call_dispatched = False
 
             for host in hosts_to_try:
                 for url_sid, a_str, desc in candidates:
-                    exotel_url = f"https://{host}/v1/Accounts/{url_sid}/Calls/connect.json"
-                    
-                    payload_data = {
-                        'From': from_num,
-                        'To': to_num,
-                        'CallerId': clean_caller,
-                        'TimeOut': '30',
-                        'CustomField': lang
-                    }
-                    payload = urllib.parse.urlencode(payload_data).encode('utf-8')
-
-                    http_req = urllib.request.Request(exotel_url, data=payload, headers={
-                        'Authorization': f"Basic {a_str}",
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    })
-
-                    try:
-                        with urllib.request.urlopen(http_req, timeout=12) as response:
-                            res_body = response.read().decode('utf-8')
-                            res_json = json.loads(res_body)
-                            call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
-                            print(f"   ✅ Real Exotel Call Dispatched ({host}) [{desc}]: SID {call_sid}")
+                    for f_num, t_num, num_desc in number_pair_variants:
+                        for cid in unique_callers:
+                            exotel_url = f"https://{host}/v1/Accounts/{url_sid}/Calls/connect.json"
                             
-                            self.send_response(200)
-                            self.send_header('Content-Type', 'application/json')
-                            self.send_header('Access-Control-Allow-Origin', '*')
-                            self.end_headers()
-                            self.wfile.write(json.dumps({
-                                "status": "success",
-                                "hasCredentials": True,
-                                "carrier": f"Exotel India ({host})",
-                                "callSid": call_sid,
-                                "to": f"+91 {clean_to}",
-                                "message": f"Real call dispatched to +91 {clean_to} via Exotel! (Bridging {from_num} ➔ {to_num})"
-                            }).encode('utf-8'))
-                            return
-                    except urllib.error.HTTPError as he:
-                        last_code = he.code
-                        last_error = he.read().decode('utf-8')
-                        print(f"   [Exotel Attempt Failed] Host: {host} | Auth: {desc} | Code: {he.code} | {last_error}")
-                        if he.code == 403 or 'KYC' in last_error or 'compliant' in last_error:
-                            # 403 Forbidden means Auth SUCCEEDED, but outbound cellular calls are blocked by Exotel account status (e.g. KYC not compliant)
+                            payload_data = {
+                                'From': f_num,
+                                'To': t_num,
+                                'CallerId': cid,
+                                'TimeOut': '30',
+                                'CustomField': lang
+                            }
+                            payload = urllib.parse.urlencode(payload_data).encode('utf-8')
+
+                            http_req = urllib.request.Request(exotel_url, data=payload, headers={
+                                'Authorization': f"Basic {a_str}",
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            })
+
+                            try:
+                                with urllib.request.urlopen(http_req, timeout=12) as response:
+                                    res_body = response.read().decode('utf-8')
+                                    res_json = json.loads(res_body)
+                                    call_sid = res_json.get('Call', {}).get('Sid', f"EXO_{clean_to}")
+                                    print(f"   ✅ Real Exotel Call Dispatched ({host}) [{desc}] [{num_desc}] [CID: {cid}]: SID {call_sid}")
+                                    
+                                    self.send_response(200)
+                                    self.send_header('Content-Type', 'application/json')
+                                    self.send_header('Access-Control-Allow-Origin', '*')
+                                    self.end_headers()
+                                    self.wfile.write(json.dumps({
+                                        "status": "success",
+                                        "hasCredentials": True,
+                                        "carrier": f"Exotel India ({host})",
+                                        "callSid": call_sid,
+                                        "to": f"+91 {clean_to}",
+                                        "message": f"Real call dispatched to +91 {clean_to} via Exotel! (Bridging {f_num} ➔ {t_num} with Caller ID {cid})"
+                                    }).encode('utf-8'))
+                                    return
+                            except urllib.error.HTTPError as he:
+                                last_code = he.code
+                                last_error = he.read().decode('utf-8')
+                                print(f"   [Exotel Attempt Failed] Host: {host} | Auth: {desc} | Numbers: {num_desc} ({f_num} ➔ {t_num}) | CID: {cid} | Code: {he.code} | {last_error}")
+                                if he.code == 403 and ('KYC' in last_error or 'compliant' in last_error):
+                                    # If Exotel says KYC compliant required, number formatting is not the cause
+                                    break
+                            except Exception as ex:
+                                last_error = str(ex)
+                                print(f"   [Exotel Exception] Host: {host} | {ex}")
+                                continue
+                        if last_code == 403 and ('KYC' in last_error or 'compliant' in last_error):
                             break
-                    except Exception as ex:
-                        last_error = str(ex)
-                        print(f"   [Exotel Exception] Host: {host} | {ex}")
-                        continue
-                if last_code == 403 or 'KYC' in last_error or 'compliant' in last_error:
+                    if last_code == 403 and ('KYC' in last_error or 'compliant' in last_error):
+                        break
+                if last_code == 403 and ('KYC' in last_error or 'compliant' in last_error):
                     break
 
             # If all attempts failed, report friendly troubleshooting
