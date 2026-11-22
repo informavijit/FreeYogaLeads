@@ -68,9 +68,15 @@ You can test the platform right now without pushing anywhere:
 * 1-Click **"Save to CRM"** or **"Draft AI Outreach"**.
 
 ### 3. 📡 Social Intent Hunter (Reddit & Community Signals)
-* Listens to live public buying signals from subreddits like `r/yoga`, `r/flexibility`, `r/backpain`, `r/careerguidance`, and Twitter.
+* **Preset Dropdowns + Custom Free-Text Search:** Select standard topics from the dropdown OR type any custom phrase (e.g., `looking for 200 hour online yoga teacher training USA`, `prenatal yoga classes`) without touching the code.
+* **Automated Contact Detail Extraction:** Automatically detects public emails (`user@gmail.com`), phone numbers/WhatsApp, and provides **1-Click Reddit DM** links directly to the user's inbox.
 * Filters for high-intent queries (seeking recommendations, pricing comparisons, therapy inquiries).
 * Direct link to original discussions to verify before reaching out.
+
+### 4. 🤖 Interactive AI Copilot & Chat Assistant
+* Floating in the bottom-right corner of the web app.
+* **Ask Any Question:** Inquire about features, how to replace the ₹50,000/day ad spend, or how to contact gym trainers.
+* **Live Search Execution from Chat:** Type `search: 200hr certification` or `find gyms in Dubai` directly in the chat, and the assistant switches tabs and executes the search automatically!
 
 ### 4. ✨ AI Outreach Studio (WhatsApp, Email & Social)
 * Generates 3 tailored pitches for each lead:
