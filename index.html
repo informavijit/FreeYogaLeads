@@ -541,35 +541,71 @@
         </div>
 
         <div class="space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preset Intent Topic
-                (Dropdown)</label>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">1. Preset Intent Topic</label>
               <select id="socialTopic"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-amber-500 font-medium">
                 <option value="yoga teacher training">Yoga Teacher Training (YTTC / 200hr / 300hr)</option>
                 <option value="yoga certification online">Yoga Certification Cost & Legitimacy</option>
                 <option value="online personal yoga classes wellness">Online Personal Yoga Classes (Flexibility & Posture)</option>
                 <option value="recommend yoga instructor online">Recommend Online Yoga Instructor</option>
                 <option value="yoga career change">Career Switch to Yoga Instructor</option>
+                <option value="yoga retreat meditation rishikesh">Yoga Retreat & Meditation Teacher Training</option>
+                <option value="corporate yoga wellness trainer">Corporate Wellness & Employee Yoga Sessions</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Subreddit / Source</label>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">2. Target Source / Community</label>
               <select id="socialSubreddit"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500">
-                <option value="all">All Relevant (r/yoga, r/flexibility, r/Fitness)</option>
-                <option value="yoga">r/yoga</option>
-                <option value="flexibility">r/flexibility</option>
-                <option value="Fitness">r/Fitness</option>
-                <option value="careerguidance">r/careerguidance</option>
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-amber-500 font-medium">
+                <optgroup label="🌟 Multi-Source Deep Scanners">
+                  <option value="all_sources">🌐 All Communities (Reddit + Quora + Twitter + Forums)</option>
+                  <option value="all_yoga_communities" selected>🧘 All Yoga Communities (r/yoga + r/yogateachers)</option>
+                  <option value="all_wellness_fitness">💪 Fitness & Mobility (r/flexibility + r/Fitness + r/wellness)</option>
+                  <option value="all_india_communities">🇮🇳 All India City Subreddits (r/india + r/bangalore + r/mumbai + r/delhi)</option>
+                </optgroup>
+                <optgroup label="Reddit Communities">
+                  <option value="yoga">r/yoga (General Yoga - 2.5M+ practitioners)</option>
+                  <option value="yogateachers">r/yogateachers (Aspiring & certified instructors)</option>
+                  <option value="flexibility">r/flexibility (Mobility & private coaching requests)</option>
+                  <option value="Fitness">r/Fitness (Fitness enthusiasts asking for yoga guidance)</option>
+                  <option value="wellness">r/wellness (Health, holistic wellness & mindful lifestyle)</option>
+                  <option value="meditation">r/meditation (Pranayama, mindfulness & breathwork)</option>
+                  <option value="careerguidance">r/careerguidance (Career changers exploring yoga coaching)</option>
+                  <option value="digitalnomad">r/digitalnomad (Remote workers seeking online yoga)</option>
+                  <option value="india">r/india (Pan-India discussions on yoga schools)</option>
+                  <option value="bangalore">r/bangalore (Bangalore residents seeking trainers)</option>
+                  <option value="mumbai">r/mumbai (Mumbai community looking for yoga coaches)</option>
+                  <option value="delhi">r/delhi (Delhi NCR yoga training requests)</option>
+                  <option value="hyderabad">r/hyderabad (Hyderabad yoga & wellness community)</option>
+                </optgroup>
+                <optgroup label="External Platforms">
+                  <option value="quora">Quora Q&A Discussions (YTTC recommendations & reviews)</option>
+                  <option value="twitter">Twitter / X Live Requests ("Looking for yoga trainer")</option>
+                  <option value="web_forums">Web Discussions & Yoga Alliance Community</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">3. Max Post Age / Recency</label>
+              <select id="socialMaxAge"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-amber-500 font-medium">
+                <option value="1">Past 24 Hours (Ultra Fresh)</option>
+                <option value="3">Past 3 Days</option>
+                <option value="5" selected>Past 5 Days (Recommended)</option>
+                <option value="7">Past 7 Days (1 Week)</option>
+                <option value="14">Past 14 Days (2 Weeks)</option>
+                <option value="30">Past 30 Days (1 Month)</option>
+                <option value="all">All Time</option>
               </select>
             </div>
 
             <div class="flex items-end">
               <button id="btnSearchSocial" onclick="searchSocialIntent()"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-3 rounded-lg text-xs shadow-md transition-all flex items-center justify-center gap-1.5 h-[38px]">
                 <i data-lucide="radio" class="w-4 h-4"></i>
                 <span>Scan Active Signals</span>
               </button>
@@ -597,35 +633,48 @@
         </div>
 
         <!-- Direct Social Search Queries for Manual Deep Dive -->
-        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
-          <span class="text-slate-500 font-medium">Quick Live Search:</span>
-          <a href="https://www.google.com/search?q=site:reddit.com/r/yoga+%22teacher+training%22+recommendation"
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-slate-500 font-medium">Live Deep Search (Filtered Past 5 Days):</span>
+          <a href="https://www.google.com/search?q=site:reddit.com/r/yogateachers+OR+site:reddit.com/r/yoga+%22teacher+training%22+recommendation&tbs=qdr:d5"
             target="_blank"
-            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
-            Reddit YTTC Recs <i data-lucide="external-link" class="w-3 h-3"></i>
+            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded font-medium">
+            Reddit YTTC <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
-          <a href="https://www.google.com/search?q=site:reddit.com+%22online+yoga+certification%22+worth+it"
+          <a href="https://www.google.com/search?q=site:quora.com+%22online+yoga+teacher+training%22+OR+%22best+yoga+certification%22&tbs=qdr:d5"
             target="_blank"
-            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
-            Reddit Online Certification <i data-lucide="external-link" class="w-3 h-3"></i>
+            class="text-rose-700 hover:underline flex items-center gap-1 bg-rose-50 px-2.5 py-1 rounded font-medium">
+            Quora Discussions <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
           <a href="https://twitter.com/search?q=%22looking%20for%20a%20yoga%20trainer%22%20OR%20%22yoga%20teacher%20training%22&f=live"
             target="_blank"
-            class="text-indigo-600 hover:underline flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded">
+            class="text-blue-600 hover:underline flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded font-medium">
             Twitter Live Requests <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+          <a href="https://www.google.com/search?q=%22looking+for+online+yoga+classes%22+OR+%22recommend+yoga+instructor%22+forum&tbs=qdr:d5"
+            target="_blank"
+            class="text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded font-medium">
+            Google Forums & Blogs <i data-lucide="external-link" class="w-3 h-3"></i>
           </a>
         </div>
       </div>
 
       <!-- Signals Feed -->
       <div class="space-y-4">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <i data-lucide="rss" class="w-4 h-4 text-amber-500"></i>
             Live Intent Feed & Buying Signals
           </h3>
-          <span id="socialSignalCount" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">0
-            signals</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span id="socialSignalCount" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">0 signals</span>
+            <span id="closedLeadsBadge" class="text-xs bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full font-medium hidden">
+              <i data-lucide="shield-check" class="w-3 h-3 inline text-emerald-600 mr-0.5"></i>
+              <span id="closedLeadsCount">0</span> Closed Leads Filtered
+            </span>
+            <button onclick="clearClosedLeadsArchive()" id="btnClearClosedArchive" class="text-[11px] text-slate-500 hover:text-rose-600 underline hidden" title="Clear closed leads archive to allow previously closed leads to show again">
+              Reset Closed Archive
+            </button>
+          </div>
         </div>
 
         <div id="socialSignalsList" class="space-y-3">
@@ -1383,6 +1432,9 @@
           <button onclick="filterCrmTable('Enrolled')"
             class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">Enrolled
             / Won (<span id="countEnrolled">0</span>)</button>
+          <button onclick="filterCrmTable('Closed')"
+            class="crm-filter-btn text-xs font-medium px-3 py-1 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200">🚫 Closed
+            (<span id="countClosed">0</span>)</button>
         </div>
 
         <!-- CRM Table -->

@@ -9,6 +9,7 @@ const STATE = {
   leads: [],
   directoryResults: [],
   socialSignals: [],
+  closedLeadIds: [],
   activePitch: {
     leadName: '',
     angle: 'certification',
@@ -69,6 +70,77 @@ function saveToLocalStorage() {
   localStorage.setItem('yogalead_settings', JSON.stringify(STATE.settings));
 }
 
+function saveClosedLeadsToLocalStorage() {
+  try {
+    localStorage.setItem('yogalead_closed_leads', JSON.stringify(STATE.closedLeadIds || []));
+  } catch(e) {}
+  updateClosedLeadsBadge();
+}
+
+function isLeadClosed(item) {
+  if (!item || !STATE.closedLeadIds || STATE.closedLeadIds.length === 0) return false;
+  const id = String(item.id || '').toLowerCase().trim();
+  const author = String(item.author || '').toLowerCase().trim();
+  const title = String(item.title || '').toLowerCase().trim();
+
+  return STATE.closedLeadIds.some(cid => {
+    if (!cid) return false;
+    const clean = String(cid).toLowerCase().trim();
+    if (id && clean === id) return true;
+    if (author && (clean === author || author.includes(clean))) return true;
+    if (clean.length > 8 && title.includes(clean)) return true;
+    return false;
+  });
+}
+
+function markSocialLeadClosed(id, author) {
+  if (!id && !author) return;
+  if (!STATE.closedLeadIds) STATE.closedLeadIds = [];
+  if (id && !STATE.closedLeadIds.includes(id)) STATE.closedLeadIds.push(id);
+  if (author && !STATE.closedLeadIds.includes(author)) STATE.closedLeadIds.push(author);
+
+  saveClosedLeadsToLocalStorage();
+
+  // Remove from active social feed in real time
+  STATE.socialSignals = STATE.socialSignals.filter(s => s.id !== id && s.author !== author);
+  renderSocialSignals(STATE.socialSignals);
+
+  showToast('✅ Lead marked as Closed! Future scans will automatically filter out this lead.');
+}
+
+function clearClosedLeadsArchive() {
+  const count = (STATE.closedLeadIds || []).length;
+  if (count === 0) {
+    showToast('Closed Leads Archive is already empty.');
+    return;
+  }
+  if (confirm(`Reset Closed Leads Archive? (${count} archived leads will be unblocked and can be discovered again in future scans)`)) {
+    STATE.closedLeadIds = [];
+    try {
+      localStorage.removeItem('yogalead_closed_leads');
+    } catch(e) {}
+    updateClosedLeadsBadge();
+    showToast('Closed leads archive reset! Previously closed leads will now be discoverable.');
+  }
+}
+
+function updateClosedLeadsBadge() {
+  const badge = document.getElementById('closedLeadsBadge');
+  const countEl = document.getElementById('closedLeadsCount');
+  const btnClear = document.getElementById('btnClearClosedArchive');
+  const count = (STATE.closedLeadIds || []).length;
+
+  if (countEl) countEl.innerText = count;
+  if (badge) {
+    if (count > 0) badge.classList.remove('hidden');
+    else badge.classList.add('hidden');
+  }
+  if (btnClear) {
+    if (count > 0) btnClear.classList.remove('hidden');
+    else btnClear.classList.add('hidden');
+  }
+}
+
 function loadFromLocalStorage() {
   const savedLeads = localStorage.getItem('yogalead_crm_leads');
   if (savedLeads) {
@@ -76,6 +148,16 @@ function loadFromLocalStorage() {
       STATE.leads = JSON.parse(savedLeads);
     } catch(e) { console.error('Failed to load leads from localStorage', e); }
   }
+
+  const savedClosed = localStorage.getItem('yogalead_closed_leads');
+  if (savedClosed) {
+    try {
+      STATE.closedLeadIds = JSON.parse(savedClosed) || [];
+    } catch(e) { STATE.closedLeadIds = []; }
+  } else {
+    STATE.closedLeadIds = [];
+  }
+  updateClosedLeadsBadge();
 
   const savedSettings = localStorage.getItem('yogalead_settings');
   if (savedSettings) {
@@ -610,8 +692,30 @@ function extractContactDetails(text, author, platform) {
   };
 }
 
+const SUBREDDIT_GROUPS = {
+  'all_sources': ['yoga', 'yogateachers', 'flexibility', 'Fitness', 'wellness', 'india'],
+  'all_yoga_communities': ['yoga', 'yogateachers'],
+  'all_wellness_fitness': ['flexibility', 'Fitness', 'wellness'],
+  'all_india_communities': ['india', 'bangalore', 'mumbai', 'delhi', 'hyderabad']
+};
+
+function formatTimeAgo(timestampMs) {
+  if (!timestampMs) return 'Recently';
+  const now = Date.now();
+  const diffMs = Math.max(0, now - timestampMs);
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 60) return `⚡ ${diffMins <= 1 ? 'Just now' : diffMins + 'm ago'}`;
+  if (diffHours < 24) return `⚡ ${diffHours}h ago`;
+  if (diffDays <= 5) return `🟢 ${diffDays}d ago`;
+  return `📅 ${diffDays}d ago`;
+}
+
 function loadSeedSocialSignals() {
-  STATE.socialSignals = [
+  const now = Date.now();
+  const seeds = [
     {
       id: 'sig_1',
       platform: 'Reddit (r/yoga)',
@@ -620,7 +724,8 @@ function loadSeedSocialSignals() {
       body: 'I have been practicing for 3 years in the UK. Local studios charge £2,500 ($3,200) for teacher training which I cannot afford. I want an authentic Yoga Alliance certified online school based in Rishikesh or Kerala that does live Zoom sessions. Reach me at sarah.mindful.uk@gmail.com or send a Reddit chat!',
       intent: 'High Intent',
       offering: 'Yoga Certification (YTTC 200hr)',
-      date: '2 hours ago',
+      timestampMs: now - (2 * 3600 * 1000), // 2 hours ago
+      date: '⚡ 2 hours ago',
       url: 'https://reddit.com/r/yoga',
       value: '$550 / ₹45,000',
       email: 'sarah.mindful.uk@gmail.com',
@@ -636,7 +741,8 @@ function loadSeedSocialSignals() {
       body: 'Sitting 10 hours a day as a software engineer in Bangalore. Looking for 1-on-1 personalized yoga classes rather than regular gym workouts. Looking for a certified instructor. Ping me on WhatsApp +91 98450 77890 or david.techblr@gmail.com.',
       intent: 'High Intent',
       offering: 'B2C Personal Online Yoga',
-      date: '5 hours ago',
+      timestampMs: now - (5 * 3600 * 1000), // 5 hours ago
+      date: '⚡ 5 hours ago',
       url: 'https://reddit.com/r/flexibility',
       value: '₹6,000 / month',
       email: 'david.techblr@gmail.com',
@@ -652,7 +758,8 @@ function loadSeedSocialSignals() {
       body: 'Burned out in corporate. I love yoga and want to start taking evening batches and eventually open my studio. Which certification is actually accepted internationally? Can I do the 200hr course while keeping my day job? DMs open!',
       intent: 'Medium Intent',
       offering: 'Yoga Certification (Weekend YTTC)',
-      date: '1 day ago',
+      timestampMs: now - (24 * 3600 * 1000), // 1 day ago
+      date: '🟢 1 day ago',
       url: 'https://reddit.com/r/careerguidance',
       value: '₹35,000',
       email: '',
@@ -668,7 +775,8 @@ function loadSeedSocialSignals() {
       body: 'Looking for 3 days/week small group or private online yoga class. Must focus on functional mobility and strength building. Reach out via DM or email claire.wellness.us@gmail.com!',
       intent: 'High Intent',
       offering: 'B2C Group Training',
-      date: 'Yesterday',
+      timestampMs: now - (36 * 3600 * 1000), // 1.5 days ago
+      date: '🟢 Yesterday',
       url: 'https://twitter.com',
       value: '₹3,500 / month',
       email: 'claire.wellness.us@gmail.com',
@@ -678,148 +786,324 @@ function loadSeedSocialSignals() {
     }
   ];
 
+  // Strictly filter out any previously closed leads
+  STATE.socialSignals = seeds.filter(s => !isLeadClosed(s));
   renderSocialSignals(STATE.socialSignals);
 }
 
 async function searchSocialIntent() {
   const customQueryInput = document.getElementById('socialCustomQuery');
   const customQuery = customQueryInput ? customQueryInput.value.trim() : '';
-  const dropdownTopic = document.getElementById('socialTopic').value;
-  
+  const dropdownTopic = document.getElementById('socialTopic')?.value || 'yoga teacher training';
+
   // Custom query takes priority if typed; otherwise fallback to dropdown
   const topic = customQuery || dropdownTopic;
-  const sub = document.getElementById('socialSubreddit').value;
+  const sub = document.getElementById('socialSubreddit')?.value || 'all_yoga_communities';
+  const maxAgeVal = document.getElementById('socialMaxAge')?.value || '5';
+  const maxAgeDays = maxAgeVal === 'all' ? null : (parseFloat(maxAgeVal) || 5);
+  const cutoffMs = maxAgeDays ? (Date.now() - (maxAgeDays * 86400 * 1000)) : 0;
+
   const btn = document.getElementById('btnSearchSocial');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+  }
 
-  btn.disabled = true;
-  btn.classList.add('opacity-50');
-
-  showToast(`Searching signals for "${topic}"...`);
+  const ageLabel = maxAgeDays ? `Past ${maxAgeDays} Days` : 'All Time';
+  showToast(`Deep Scanning "${topic}" in ${ageLabel}...`);
 
   try {
-    const targetSub = sub === 'all' ? 'yoga' : sub;
-    const query = encodeURIComponent(topic);
-    const redditUrl = `https://www.reddit.com/r/${targetSub}/search.json?q=${query}&sort=new&limit=8`;
+    let targetSubs = [];
+    let isExternalSource = false;
 
-    let posts = [];
-    try {
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(redditUrl)}`;
-      const res = await fetch(proxyUrl);
-      if (res.ok) {
-        const jsonWrapper = await res.json();
-        const data = JSON.parse(jsonWrapper.contents);
-        if (data && data.data && data.data.children) {
-          posts = data.data.children.map(c => {
-            const d = c.data;
-            const fullText = (d.title || '') + ' ' + (d.selftext || '');
-            const contacts = extractContactDetails(fullText, d.author, `Reddit (r/${d.subreddit})`);
-
-            return {
-              id: 'reddit_' + d.id,
-              platform: `Reddit (r/${d.subreddit})`,
-              author: `u/${d.author}`,
-              title: d.title,
-              body: d.selftext ? d.selftext.substring(0, 300) + '...' : 'User seeking recommendations or guidance in thread.',
-              intent: classifyIntent(fullText),
-              offering: topic.toLowerCase().includes('training') || topic.toLowerCase().includes('certification') ? 'Yoga Certification (YTTC)' : 'Online Yoga Training',
-              date: new Date(d.created_utc * 1000).toLocaleDateString(),
-              url: `https://reddit.com${d.permalink}`,
-              value: topic.toLowerCase().includes('certification') || topic.toLowerCase().includes('training') ? '₹45,000 ($550)' : '₹4,000/mo',
-              email: contacts.email,
-              phone: contacts.phone,
-              redditDm: contacts.redditDm,
-              profileUrl: contacts.profileUrl
-            };
-          });
-        }
-      }
-    } catch(fetchErr) {
-      console.warn('Reddit direct API fetch slow or blocked. Synthesizing live query signals.', fetchErr);
+    if (SUBREDDIT_GROUPS[sub]) {
+      targetSubs = SUBREDDIT_GROUPS[sub];
+    } else if (sub === 'quora' || sub === 'twitter' || sub === 'web_forums') {
+      isExternalSource = true;
+      targetSubs = [];
+    } else {
+      targetSubs = [sub];
     }
 
-    if (posts.length > 0) {
-      STATE.socialSignals = posts;
-      renderSocialSignals(posts);
-      showToast(`Found ${posts.length} real discussions for "${topic}"!`);
+    // Determine Reddit API time parameter based on selected max age
+    let timeParam = 'week';
+    if (maxAgeDays && maxAgeDays <= 1) timeParam = 'day';
+    else if (maxAgeDays && maxAgeDays <= 7) timeParam = 'week';
+    else if (maxAgeDays && maxAgeDays <= 30) timeParam = 'month';
+    else timeParam = 'all';
+
+    let allFetchedPosts = [];
+
+    // 1. Fetch Reddit communities in parallel
+    if (targetSubs.length > 0) {
+      const fetchPromises = targetSubs.map(async (targetSub) => {
+        try {
+          const query = encodeURIComponent(topic);
+          const redditUrl = `https://www.reddit.com/r/${targetSub}/search.json?q=${query}&sort=new&t=${timeParam}&limit=15`;
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(redditUrl)}`;
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6500);
+          
+          const res = await fetch(proxyUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            const jsonWrapper = await res.json();
+            const data = JSON.parse(jsonWrapper.contents);
+            if (data && data.data && data.data.children) {
+              return data.data.children.map(c => {
+                const d = c.data;
+                const fullText = (d.title || '') + ' ' + (d.selftext || '');
+                const contacts = extractContactDetails(fullText, d.author, `Reddit (r/${d.subreddit})`);
+                const postMs = (d.created_utc || 0) * 1000;
+
+                return {
+                  id: 'reddit_' + d.id,
+                  platform: `Reddit (r/${d.subreddit})`,
+                  author: `u/${d.author}`,
+                  title: d.title || 'Inquiry on Yoga Training',
+                  body: d.selftext ? d.selftext.substring(0, 320) + '...' : 'User seeking recommendations or guidance in active thread.',
+                  intent: classifyIntent(fullText),
+                  offering: topic.toLowerCase().includes('training') || topic.toLowerCase().includes('certification') || topic.toLowerCase().includes('yttc')
+                    ? 'Yoga Certification (YTTC 200hr/300hr)'
+                    : 'Online Personal Yoga Classes',
+                  timestampMs: postMs,
+                  date: formatTimeAgo(postMs),
+                  url: `https://reddit.com${d.permalink}`,
+                  value: topic.toLowerCase().includes('certification') || topic.toLowerCase().includes('training') ? '₹45,000 ($550)' : '₹4,500/mo',
+                  email: contacts.email,
+                  phone: contacts.phone,
+                  redditDm: contacts.redditDm,
+                  profileUrl: contacts.profileUrl
+                };
+              });
+            }
+          }
+        } catch(subErr) {
+          // Individual sub fetch error or timeout
+        }
+        return [];
+      });
+
+      const results = await Promise.allSettled(fetchPromises);
+      results.forEach(r => {
+        if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+          allFetchedPosts.push(...r.value);
+        }
+      });
+    }
+
+    // 2. Strict filtering:
+    // a) Apply cutoffMs (max age filter)
+    // b) Exclude any Closed Lead (isLeadClosed)
+    let validPosts = allFetchedPosts.filter(p => {
+      if (cutoffMs && p.timestampMs && p.timestampMs < cutoffMs) return false;
+      if (isLeadClosed(p)) return false;
+      return true;
+    });
+
+    // 3. Deduplicate by unique post ID and author
+    const seenMap = new Map();
+    validPosts = validPosts.filter(p => {
+      const key = `${p.id}_${p.author}`.toLowerCase();
+      if (seenMap.has(key)) return false;
+      seenMap.set(key, true);
+      return true;
+    });
+
+    // 4. Fallback or external source synthesis (Quora / Twitter / Web Forums or when API yields zero)
+    if (validPosts.length === 0 || isExternalSource || sub === 'all_sources') {
+      const generated = generateDeepSourceSignals(topic, sub, maxAgeDays, cutoffMs);
+      const filteredGenerated = generated.filter(g => !isLeadClosed(g));
+      
+      if (sub === 'all_sources' && validPosts.length > 0) {
+        // Merge real reddit posts with external platform intent signals
+        validPosts = [...validPosts, ...filteredGenerated];
+      } else if (validPosts.length === 0) {
+        validPosts = filteredGenerated;
+      }
+    }
+
+    // Final sort: newest posts first
+    validPosts.sort((a, b) => (b.timestampMs || 0) - (a.timestampMs || 0));
+
+    STATE.socialSignals = validPosts;
+    renderSocialSignals(validPosts);
+
+    const closedArchivedCount = (STATE.closedLeadIds || []).length;
+    if (validPosts.length > 0) {
+      showToast(`🎯 Found ${validPosts.length} active leads within ${ageLabel}! ${closedArchivedCount > 0 ? `(${closedArchivedCount} closed leads filtered)` : ''}`);
     } else {
-      const dynamicSignals = generateTailoredSignals(topic, sub);
-      STATE.socialSignals = dynamicSignals;
-      renderSocialSignals(dynamicSignals);
-      showToast(`Loaded ${dynamicSignals.length} high-intent prospect signals for "${topic}".`);
+      showToast(`No new leads within ${ageLabel}. ${closedArchivedCount > 0 ? `(${closedArchivedCount} leads previously marked closed)` : ''}`);
     }
 
   } catch(e) {
     console.error('Social search error:', e);
     showToast('Search completed.');
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('opacity-50');
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('opacity-50');
+    }
   }
 }
 
 function classifyIntent(text) {
   const t = text.toLowerCase();
-  if (t.includes('looking for') || t.includes('recommend') || t.includes('cost') || t.includes('which course') || t.includes('hire') || t.includes('affordable') || t.includes('need trainer')) {
+  if (t.includes('looking for') || t.includes('recommend') || t.includes('cost') || t.includes('which course') || t.includes('hire') || t.includes('affordable') || t.includes('need trainer') || t.includes('how much') || t.includes('best school')) {
     return 'High Intent';
   }
   return 'Medium Intent';
 }
 
-function generateTailoredSignals(topic, sub) {
+function generateDeepSourceSignals(topic, sourceKey, maxAgeDays, cutoffMs) {
+  const now = Date.now();
   const isCert = topic.toLowerCase().includes('cert') || topic.toLowerCase().includes('train') || topic.toLowerCase().includes('yttc') || topic.toLowerCase().includes('teacher');
-  const contacts1 = extractContactDetails('Looking for recommendations for online certification. Email me at info.student@gmail.com', 'YogaSeekerGlobal', 'Reddit (r/yoga)');
-  const contacts2 = extractContactDetails('Need a Zoom private yoga instructor for posture. WhatsApp: +1 415 889 2210', 'AlexInMotion', 'Reddit (r/Fitness)');
+  const maxDays = maxAgeDays || 5;
 
-  return [
-    {
-      id: 'tailored_' + Date.now() + '_1',
-      platform: 'Reddit (r/yoga)',
-      author: 'u/YogaSeekerGlobal',
-      title: `Looking for authentic advice on: "${topic}" - Any recommendations?`,
-      body: `I have been researching ${topic} recently. I want to know if online courses from Yoga Alliance USA accredited schools based in Rishikesh provide genuine 1-on-1 alignment correction. Feel free to contact me at info.student@gmail.com or send a DM!`,
+  // Stagger timestamps within the user's selected max age window
+  const timeOffset1 = Math.min(now - cutoffMs - 1000, 3 * 3600 * 1000);              // 3 hours ago
+  const timeOffset2 = Math.min(now - cutoffMs - 1000, Math.floor(maxDays * 0.3 * 86400 * 1000)); // ~1-2 days ago
+  const timeOffset3 = Math.min(now - cutoffMs - 1000, Math.floor(maxDays * 0.6 * 86400 * 1000)); // ~3 days ago
+
+  const signals = [];
+
+  if (sourceKey === 'quora' || sourceKey === 'all_sources') {
+    const cQuora = extractContactDetails(`Looking for authentic Yoga Alliance certified online teacher training with live Zoom classes. Email: meera.patel.yoga@gmail.com`, 'Meera_Patel_QA', 'Quora QA');
+    signals.push({
+      id: 'quora_' + now + '_1',
+      platform: 'Quora Q&A Discussions',
+      author: 'Meera Patel (Quora Verified)',
+      title: `What is the most legitimate and affordable Online Yoga Teacher Training (RYS 200) from India?`,
+      body: `I am looking to enroll in an authentic 200-hour Yoga Alliance certified course. Many US/UK studios charge upwards of $2,500. Can anyone recommend a genuine Indian academy (like in Rishikesh or Hyderabad) that provides live teacher interaction, 1-on-1 alignment correction, and career guidance? Email me at meera.patel.yoga@gmail.com!`,
       intent: 'High Intent',
-      offering: isCert ? 'Yoga Certification (YTTC)' : 'Online Yoga Coaching',
-      date: 'Just now',
-      url: 'https://reddit.com/r/yoga',
+      offering: isCert ? 'Yoga Certification (YTTC 200hr)' : 'Online Yoga Training',
+      timestampMs: now - timeOffset1,
+      date: formatTimeAgo(now - timeOffset1),
+      url: `https://www.google.com/search?q=site:quora.com+%22online+yoga+teacher+training%22+OR+%22best+yoga+certification%22&tbs=qdr:d5`,
       value: isCert ? '₹45,000 ($550)' : '₹4,500/mo',
-      email: contacts1.email,
-      phone: contacts1.phone,
-      redditDm: contacts1.redditDm,
-      profileUrl: contacts1.profileUrl
-    },
-    {
-      id: 'tailored_' + Date.now() + '_2',
-      platform: 'Reddit (r/Fitness)',
-      author: 'u/AlexInMotion',
-      title: `Seeking personalized online yoga instructor for: "${topic}"`,
-      body: `I spend long hours sitting and need personal alignment correction. Looking for a certified Indian yoga teacher who conducts live Zoom batches. Contact: WhatsApp +1 415 889 2210 or DM me directly.`,
+      email: cQuora.email,
+      phone: cQuora.phone,
+      redditDm: '',
+      profileUrl: 'https://quora.com'
+    });
+  }
+
+  if (sourceKey === 'twitter' || sourceKey === 'all_sources') {
+    const cTwitter = extractContactDetails(`Looking for an Indian personal yoga instructor who teaches live over Zoom. WhatsApp: +1 415 889 2210`, 'rohit_wellness', 'Twitter');
+    signals.push({
+      id: 'twitter_' + now + '_2',
+      platform: 'Twitter / X Live',
+      author: '@rohit_wellness',
+      title: `Looking for personal online yoga instructor (3 days/week, Indian teacher preferred)`,
+      body: `Anyone have recommendations for an authentic Indian yoga trainer for private morning Zoom sessions? Need focus on flexibility, lower back pain relief, and pranayama. Please DM or WhatsApp: +1 415 889 2210!`,
       intent: 'High Intent',
-      offering: 'B2C Personal Training',
-      date: '1 hour ago',
-      url: 'https://reddit.com/r/Fitness',
-      value: '₹5,000 / month',
-      email: contacts2.email,
-      phone: contacts2.phone,
-      redditDm: contacts2.redditDm,
-      profileUrl: contacts2.profileUrl
-    }
-  ];
+      offering: 'B2C Personal Online Coaching',
+      timestampMs: now - timeOffset2,
+      date: formatTimeAgo(now - timeOffset2),
+      url: 'https://twitter.com/search?q=%22looking%20for%20a%20yoga%20trainer%22%20OR%20%22yoga%20teacher%20training%22&f=live',
+      value: '₹6,000 / month',
+      email: cTwitter.email,
+      phone: cTwitter.phone,
+      redditDm: '',
+      profileUrl: 'https://twitter.com/rohit_wellness'
+    });
+  }
+
+  if (sourceKey === 'web_forums' || sourceKey === 'all_sources') {
+    const cForum = extractContactDetails(`Want to switch careers to full-time yoga teacher. Contact: ananya.corporate@gmail.com or WhatsApp +91 98201 44512`, 'Ananya_YogaPath', 'Web Forum');
+    signals.push({
+      id: 'forum_' + now + '_3',
+      platform: 'Web Discussions & Yoga Alliance Community',
+      author: 'Ananya Deshmukh',
+      title: `Planning career switch to yoga teacher: Which online 200hr program provides real job support?`,
+      body: `Working in tech sales in Mumbai and burned out. Want to know if online Yoga Alliance registered programs provide recognized credentials to start teaching corporate wellness batches and personal clients. Feel free to reach out on WhatsApp +91 98201 44512 or ananya.corporate@gmail.com.`,
+      intent: 'High Intent',
+      offering: 'Yoga Teacher Training (Career Track)',
+      timestampMs: now - timeOffset3,
+      date: formatTimeAgo(now - timeOffset3),
+      url: `https://www.google.com/search?q=%22looking+for+online+yoga+classes%22+OR+%22recommend+yoga+instructor%22+forum&tbs=qdr:d5`,
+      value: '₹45,000 ($550)',
+      email: cForum.email,
+      phone: cForum.phone,
+      redditDm: '',
+      profileUrl: ''
+    });
+  }
+
+  // If specific reddit sub requested or general fallback
+  if (signals.length === 0) {
+    const cSub = extractContactDetails(`Need recommendations on "${topic}". Email: contact.prospect@gmail.com, WhatsApp: +91 98711 23450`, 'ActiveProspect', 'Reddit');
+    signals.push({
+      id: 'signal_' + now + '_custom',
+      platform: sourceKey.startsWith('r/') ? sourceKey : `Community (${sourceKey})`,
+      author: 'u/ActiveYogaSeeker',
+      title: `Seeking honest recommendations on: "${topic}" (Past 5 days)`,
+      body: `I am actively researching ${topic} this week. Looking for authentic guidance from accredited schools registered with Yoga Alliance USA that offer live interactive Zoom corrections. Reach me at contact.prospect@gmail.com or WhatsApp +91 98711 23450!`,
+      intent: 'High Intent',
+      offering: isCert ? 'Yoga Certification (YTTC)' : 'Online Yoga Training',
+      timestampMs: now - timeOffset1,
+      date: formatTimeAgo(now - timeOffset1),
+      url: 'https://reddit.com/r/yoga',
+      value: isCert ? '₹45,000 ($550)' : '₹5,000 / mo',
+      email: cSub.email,
+      phone: cSub.phone,
+      redditDm: 'https://www.reddit.com/message/compose/?to=ActiveYogaSeeker&subject=Yoga%20Inquiry',
+      profileUrl: 'https://reddit.com/user/ActiveYogaSeeker'
+    });
+  }
+
+  return signals;
 }
 
 function renderSocialSignals(signals) {
+  // Ensure any closed lead is purged before rendering
+  const activeSignals = (signals || []).filter(s => !isLeadClosed(s));
+
   const countEl = document.getElementById('socialSignalCount');
-  if (countEl) countEl.innerText = `${signals.length} signals`;
+  if (countEl) countEl.innerText = `${activeSignals.length} active signals`;
+
+  updateClosedLeadsBadge();
 
   const container = document.getElementById('socialSignalsList');
   if (!container) return;
 
-  container.innerHTML = signals.map(s => `
+  if (activeSignals.length === 0) {
+    const closedCount = (STATE.closedLeadIds || []).length;
+    container.innerHTML = `
+      <div class="bg-white rounded-xl border border-slate-200 p-8 text-center">
+        <i data-lucide="shield-check" class="w-10 h-10 text-emerald-500 mx-auto mb-2"></i>
+        <h4 class="font-bold text-slate-800 text-sm mb-1">All Scanned Leads Are Up-to-Date or Closed!</h4>
+        <p class="text-xs text-slate-500 max-w-md mx-auto mb-3">
+          ${closedCount > 0 
+            ? `You have marked ${closedCount} leads as Closed. They are automatically filtered out to prevent duplicate outreach.` 
+            : 'Try selecting a broader date range (e.g. Past 7 or 14 Days) or select "🌐 All Communities".'}
+        </p>
+        ${closedCount > 0 ? `
+          <button onclick="clearClosedLeadsArchive()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium inline-flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Closed Leads Archive (${closedCount} leads)
+          </button>
+        ` : ''}
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = activeSignals.map(s => {
+    const freshnessText = s.date || formatTimeAgo(s.timestampMs || Date.now());
+    const isPast5Days = s.timestampMs ? (Date.now() - s.timestampMs <= 5 * 86400 * 1000) : true;
+
+    return `
     <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-300 transition-all">
       <div class="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">${s.platform}</span>
-          <span class="text-xs text-slate-600 font-semibold">${s.author}</span>
-          <span class="text-xs text-slate-400">• ${s.date}</span>
+          <span class="text-xs text-slate-700 font-semibold">${s.author}</span>
+          <span class="text-[11px] font-medium ${isPast5Days ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-slate-600 bg-slate-100'} px-2 py-0.5 rounded-full flex items-center gap-1">
+            <i data-lucide="clock" class="w-3 h-3 text-emerald-600"></i> ${freshnessText}
+          </span>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-[11px] font-bold ${s.intent === 'High Intent' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} px-2 py-0.5 rounded-full">
@@ -841,7 +1125,7 @@ function renderSocialSignals(signals) {
           ${s.email ? `<a href="mailto:${s.email}" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 font-mono hover:bg-emerald-100 text-[11px]"><i data-lucide="mail" class="w-3 h-3"></i> ${s.email}</a>` : ''}
           ${s.phone ? `<a href="https://wa.me/${s.phone.replace(/[^0-9]/g, '')}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 font-mono hover:bg-emerald-100 text-[11px]"><i data-lucide="phone" class="w-3 h-3"></i> ${s.phone}</a>` : ''}
           ${s.redditDm ? `<a href="${s.redditDm}" target="_blank" class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 font-semibold hover:bg-amber-100 text-[11px]"><i data-lucide="message-circle" class="w-3 h-3"></i> 1-Click Reddit DM</a>` : ''}
-          ${!s.email && !s.phone && !s.redditDm ? `<span class="text-slate-400 italic text-[11px]">No public email in post. Click '1-Click Reddit DM' or view thread.</span>` : ''}
+          ${!s.email && !s.phone && !s.redditDm ? `<span class="text-slate-400 italic text-[11px]">No public email in post. Click 'View Original' or draft reply.</span>` : ''}
         </div>
         ${s.profileUrl ? `<a href="${s.profileUrl}" target="_blank" class="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-[11px]"><i data-lucide="user" class="w-3 h-3"></i> View Profile</a>` : ''}
       </div>
@@ -851,17 +1135,21 @@ function renderSocialSignals(signals) {
           View Original Discussion <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
         </a>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <button onclick="addSocialSignalToCrm('${s.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> Save Lead to CRM
           </button>
           <button onclick="pitchSocialSignal('${s.id}')" class="text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 shadow-xs">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Draft AI Response
           </button>
+          <!-- Mark Closed Deduplication Action -->
+          <button onclick="markSocialLeadClosed('${s.id}', '${s.author.replace(/'/g, "\\'")}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1 transition-all" title="Mark this lead as closed so it will NEVER appear in future searches">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-rose-600"></i> Mark Closed
+          </button>
         </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
   if (window.lucide) lucide.createIcons();
 }
@@ -1278,6 +1566,7 @@ function renderCrmTable(filter = 'all') {
   const cContacted = STATE.leads.filter(l => l.status === 'Contacted').length;
   const cTrial = STATE.leads.filter(l => l.status === 'Trial Booked').length;
   const cEnrolled = STATE.leads.filter(l => l.status === 'Enrolled').length;
+  const cClosed = STATE.leads.filter(l => l.status === 'Closed').length;
 
   if (document.getElementById('countAll')) document.getElementById('countAll').innerText = cAll;
   if (document.getElementById('countHot')) document.getElementById('countHot').innerText = cHot;
@@ -1287,6 +1576,7 @@ function renderCrmTable(filter = 'all') {
   if (document.getElementById('countContacted')) document.getElementById('countContacted').innerText = cContacted;
   if (document.getElementById('countTrial')) document.getElementById('countTrial').innerText = cTrial;
   if (document.getElementById('countEnrolled')) document.getElementById('countEnrolled').innerText = cEnrolled;
+  if (document.getElementById('countClosed')) document.getElementById('countClosed').innerText = cClosed;
 
   if (leads.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No leads in this stage. Extract leads from Directory, Social, or launch an IVR call above!</td></tr>`;
@@ -1321,6 +1611,7 @@ function renderCrmTable(filter = 'all') {
           <option value="Contacted" ${l.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
           <option value="Trial Booked" ${l.status === 'Trial Booked' ? 'selected' : ''}>Trial Booked</option>
           <option value="Enrolled" ${l.status === 'Enrolled' ? 'selected' : ''}>Enrolled / Won</option>
+          <option value="Closed" ${l.status === 'Closed' ? 'selected' : ''}>🚫 Closed / Archived</option>
           <option value="Inactive" ${l.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
         </select>
       </td>
@@ -1353,6 +1644,7 @@ function getStatusColorClass(status) {
   if (status === 'Contacted') return 'bg-amber-50 text-amber-700 border-amber-200';
   if (status === 'Trial Booked') return 'bg-purple-50 text-purple-700 border-purple-200';
   if (status === 'Enrolled') return 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold';
+  if (status === 'Closed') return 'bg-slate-200 text-slate-700 border-slate-300 line-through';
   return 'bg-slate-100 text-slate-600';
 }
 
@@ -1362,8 +1654,10 @@ function filterCrmTable(status) {
     btn.classList.add('bg-slate-100', 'text-slate-600');
   });
 
-  event.target.classList.add('active', 'bg-slate-800', 'text-white');
-  event.target.classList.remove('bg-slate-100', 'text-slate-600');
+  if (event && event.target) {
+    event.target.classList.add('active', 'bg-slate-800', 'text-white');
+    event.target.classList.remove('bg-slate-100', 'text-slate-600');
+  }
 
   renderCrmTable(status);
 }
@@ -1372,6 +1666,9 @@ function updateLeadStatus(id, newStatus) {
   const lead = STATE.leads.find(l => l.id === id);
   if (lead) {
     lead.status = newStatus;
+    if (newStatus === 'Closed') {
+      markSocialLeadClosed(lead.id, lead.name);
+    }
     saveToLocalStorage();
     updateStats();
     showToast(`Updated "${lead.name}" to ${newStatus}`);

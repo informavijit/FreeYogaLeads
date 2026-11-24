@@ -401,13 +401,13 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                 caller_10 = clean_caller_digits
 
             caller_id_variants = [
-                caller_id.strip(),
                 f"0{caller_10}" if not caller_10.startswith('0') else caller_10,
                 f"+91{caller_10}",
-                caller_10
+                caller_10,
+                caller_id.replace(' ', '').replace('-', '').strip()
             ]
             seen_c = set()
-            unique_callers = [c for c in caller_id_variants if not (c in seen_c or seen_c.add(c))]
+            unique_callers = [c for c in caller_id_variants if c and not (c in seen_c or seen_c.add(c))]
 
             # Phone number formatting combinations to try (10-digit, E.164, 0-prefixed)
             number_pair_variants = [
@@ -430,8 +430,7 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                                 'From': f_num,
                                 'To': t_num,
                                 'CallerId': cid,
-                                'TimeOut': '30',
-                                'CustomField': lang
+                                'TimeOut': '30'
                             }
                             payload = urllib.parse.urlencode(payload_data).encode('utf-8')
 
@@ -464,14 +463,14 @@ class TelephonyBridgeHandler(http.server.BaseHTTPRequestHandler):
                                 last_code = he.code
                                 last_error = he.read().decode('utf-8')
                                 print(f"   [Exotel Attempt Failed] Host: {host} | Auth: {desc} | Numbers: {num_desc} ({f_num} ➔ {t_num}) | CID: {cid} | Code: {he.code} | {last_error}")
-                                if he.code == 403 and ('KYC' in last_error or 'compliant' in last_error):
-                                    # If Exotel says KYC compliant required, number formatting is not the cause
+                                if (he.code == 401 and '34010' in last_error) or (he.code == 403 and ('KYC' in last_error or 'compliant' in last_error)):
+                                    # Auth or KYC issue: do not retry other number pairs on this invalid credential/host combination
                                     break
                             except Exception as ex:
                                 last_error = str(ex)
                                 print(f"   [Exotel Exception] Host: {host} | {ex}")
                                 continue
-                        if last_code == 403 and ('KYC' in last_error or 'compliant' in last_error):
+                        if (last_code == 401 and '34010' in last_error) or (last_code == 403 and ('KYC' in last_error or 'compliant' in last_error)):
                             break
                     if last_code == 403 and ('KYC' in last_error or 'compliant' in last_error):
                         break
